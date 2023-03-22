@@ -1,0 +1,24 @@
+#!/bin/bash
+
+usage () {
+	echo "Usage:"
+	echo "$0 <alias1>=<command1> <alias2>=<command2>"
+}
+
+if [ -z "$shrc" ]; then
+	echo "Error: It seems you have not set the \$shrc variable yet. Please set it using the export command"
+	exit 1
+fi
+
+if [[ $# -eq 0 ]]; then
+	usage
+fi
+
+while [[ $# -gt 0 ]]
+do
+	alias=$(echo "$1" | awk -F= '{ print $1 }')
+	string=$(echo "$1" | awk -F= '{ print $2 }')
+	echo "alias "$alias"="\"$string"\"" >> "$shrc"
+	echo "alias written to "$shrc""
+	shift
+done
