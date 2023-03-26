@@ -77,6 +77,7 @@ bindkey -M vicmd '^e' edit-command-line
 bindkey -M visual '^[[P' vi-delete
 
 # Load syntax highlighting; should be last.
-source /usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh 2>/dev/null
-alias cdC="cd /home/al/.config/ && ls -l"
-alias cdS="cd /home/al/.local/scripts && ls -l"
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null
+source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh 2>/dev/null
+source /usr/share/zsh/plugins/autojump/autojump.sh 2>/dev/null
+source /usr/share/zsh/plugins/k/k.sh 2>/dev/null
