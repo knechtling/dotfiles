@@ -61,7 +61,7 @@ lfcd () {
         [ -d "$dir" ] && [ "$dir" != "$(pwd)" ] && cd "$dir"
     fi
 }
-bindkey -s '^o' '^ulfcd\n'
+bindkey -s '^o' '^ulfub\n'
 
 # bindkey -s '^a' '^ubc -lq\n'
 
@@ -69,7 +69,7 @@ bindkey -s '^f' '^ucd "$(dirname "$(fzf)")"\n'
 
 bindkey '^[[P' delete-char
 
-# Edit line in vim with ctrl-e:
+# Edit line in vim with ctrl-x:
 autoload edit-command-line; zle -N edit-command-line
 bindkey '^x' edit-command-line
 bindkey -M vicmd '^[[P' vi-delete-char
@@ -80,6 +80,30 @@ bindkey -M visual '^[[P' vi-delete
 # Bind ctrl-e and ctrl-a to beginning and end of line
 bindkey '^a' vi-beginning-of-line
 bindkey '^e' vi-end-of-line
+
+# dirstack
+autoload -Uz add-zsh-hook
+
+DIRSTACKFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/dirs"
+if [[ -f "$DIRSTACKFILE" ]] && (( ${#dirstack} == 0 )); then
+	dirstack=("${(@f)"$(< "$DIRSTACKFILE")"}")
+	[[ -d "${dirstack[1]}" ]] && cd -- "${dirstack[1]}"
+fi
+chpwd_dirstack() {
+	print -l -- "$PWD" "${(u)dirstack[@]}" > "$DIRSTACKFILE"
+}
+add-zsh-hook -Uz chpwd chpwd_dirstack
+
+DIRSTACKSIZE='20'
+
+setopt AUTO_PUSHD PUSHD_SILENT PUSHD_TO_HOME
+
+## Remove duplicate entries
+setopt PUSHD_IGNORE_DUPS
+
+## This reverts the +/- operators.
+setopt PUSHD_MINUS
+
 
 # Load syntax highlighting; should be last.
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null
