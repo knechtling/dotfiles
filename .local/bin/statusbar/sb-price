@@ -24,7 +24,7 @@ updateprice() { curl -sf -m 3 $currency.$url/{1$1,$1$interval} --output "$pricef
 [ "${filestat%% *}" != "$(date '+%Y-%m-%d')" ] &&
 	updateprice "$1"
 
-case $BLOCK_BUTTON in
+case $BUTTON in
 	1) setsid "$TERMINAL" -e less -Srf "$chartfile" ;;
 	2) notify-send -u low "$3 Updating..." "Updating $2 price..."
 		updateprice "$1" && notify-send "$3 Update complete." "$2 price is now
