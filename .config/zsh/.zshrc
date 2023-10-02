@@ -1,4 +1,4 @@
-# Luke's config for the Zoomer Shell
+# Anton's config for the Zoomer Shell
 
 # Enable colors and change prompt:
 autoload -U colors && colors	# Load colors
@@ -77,11 +77,20 @@ bindkey -M vicmd '^e' edit-command-line
 bindkey -M visual '^[[P' vi-delete
 
 
-# Bind ctrl-e and ctrl-a to beginning and end of line
-bindkey '^a' vi-beginning-of-line
-bindkey '^e' vi-end-of-line
+# Implement emacs keybindings in vi mode
+bindkey "^a" vi-beginning-of-line
+bindkey "^e" vi-end-of-line
+bindkey "^u" backward-kill-line
+bindkey "^k" kill-line
+bindkey "^w" backward-kill-word
+bindkey "^r" history-incremental-search-backward
+bindkey "^[b" backward-word
+bindkey "^[f" forward-word
+bindkey "^[d" kill-word
+bindkey "^l" clear-screen
+bindkey "^_" undo
 
-# dirstack
+# Dirstack configuration
 autoload -Uz add-zsh-hook
 
 DIRSTACKFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/dirs"
@@ -98,15 +107,88 @@ DIRSTACKSIZE='20'
 
 setopt AUTO_PUSHD PUSHD_SILENT PUSHD_TO_HOME
 
-## Remove duplicate entries
 setopt PUSHD_IGNORE_DUPS
 
-## This reverts the +/- operators.
 setopt PUSHD_MINUS
 
+# create a zkbd compatible hash;
+# to add other keys to this hash, see: man 5 terminfo
+typeset -g -A key
 
-# Load syntax highlighting; should be last.
-source /usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh 2>/dev/null
-source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh 2>/dev/null
-source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search 2>/dev/null
-source /usr/share/autojump/autojump.zsh 2>/dev/null
+key[Home]="${terminfo[khome]}"
+key[End]="${terminfo[kend]}"
+key[Insert]="${terminfo[kich1]}"
+key[Backspace]="${terminfo[kbs]}"
+key[Delete]="${terminfo[kdch1]}"
+key[Up]="${terminfo[kcuu1]}"
+key[Down]="${terminfo[kcud1]}"
+key[Left]="${terminfo[kcub1]}"
+key[Right]="${terminfo[kcuf1]}"
+key[PageUp]="${terminfo[kpp]}"
+key[PageDown]="${terminfo[knp]}"
+key[Shift-Tab]="${terminfo[kcbt]}"
+
+# setup key accordingly
+[[ -n "${key[Home]}"      ]] && bindkey -- "${key[Home]}"       beginning-of-line
+[[ -n "${key[End]}"       ]] && bindkey -- "${key[End]}"        end-of-line
+[[ -n "${key[Insert]}"    ]] && bindkey -- "${key[Insert]}"     overwrite-mode
+[[ -n "${key[Backspace]}" ]] && bindkey -- "${key[Backspace]}"  backward-delete-char
+[[ -n "${key[Delete]}"    ]] && bindkey -- "${key[Delete]}"     delete-char
+[[ -n "${key[Up]}"        ]] && bindkey -- "${key[Up]}"         up-line-or-history
+[[ -n "${key[Down]}"      ]] && bindkey -- "${key[Down]}"       down-line-or-history
+[[ -n "${key[Left]}"      ]] && bindkey -- "${key[Left]}"       backward-char
+[[ -n "${key[Right]}"     ]] && bindkey -- "${key[Right]}"      forward-char
+[[ -n "${key[PageUp]}"    ]] && bindkey -- "${key[PageUp]}"     beginning-of-buffer-or-history
+[[ -n "${key[PageDown]}"  ]] && bindkey -- "${key[PageDown]}"   end-of-buffer-or-history
+[[ -n "${key[Shift-Tab]}" ]] && bindkey -- "${key[Shift-Tab]}"  reverse-menu-complete
+
+# Finally, make sure the terminal is in application mode, when zle is
+# active. Only then are the values from $terminfo valid.
+if (( ${+terminfo[smkx]} && ${+terminfo[rmkx]} )); then
+	autoload -Uz add-zle-hook-widget
+	function zle_application_mode_start { echoti smkx }
+	function zle_application_mode_stop { echoti rmkx }
+	add-zle-hook-widget -Uz zle-line-init zle_application_mode_start
+	add-zle-hook-widget -Uz zle-line-finish zle_application_mode_stop
+fi
+
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+
+[[ -n "${key[Up]}"   ]] && bindkey -- "${key[Up]}"   up-line-or-beginning-search
+[[ -n "${key[Down]}" ]] && bindkey -- "${key[Down]}" down-line-or-beginning-search
+
+## Load plugins; should be last.
+
+# Fast Syntax Highlighting
+F_SH_PLUGIN="/usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+if [ -f "$F_SH_PLUGIN" ]; then
+    source "$F_SH_PLUGIN"
+else
+    echo "Error: Unable to source fast-syntax-highlighting.plugin.zsh, file not found!"
+fi
+
+# Zsh Autosuggestions
+ZSH_AUTOSUGGESTIONS_PLUGIN="/usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
+if [ -f "$ZSH_AUTOSUGGESTIONS_PLUGIN" ]; then
+    source "$ZSH_AUTOSUGGESTIONS_PLUGIN"
+else
+    echo "Error: Unable to source zsh-autosuggestions.zsh, file not found!"
+fi
+
+# Zsh History Substring Search
+ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN="/usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh"
+if [ -f "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" ]; then
+    source "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN"
+else
+    echo "Error: Unable to source zsh-history-substring-search.zsh, file not found!"
+fi
+
+# Autojump
+AUTOJUMP_PLUGIN="/usr/share/autojump/autojump.zsh"
+if [ -f "$AUTOJUMP_PLUGIN" ]; then
+    source "$AUTOJUMP_PLUGIN"
+else
+    echo "Error: Unable to source autojump.zsh, file not found!"
+fi
