@@ -61,3 +61,4 @@ alias \
 	weath="less -S ${XDG_CACHE_HOME:-$HOME/.cache}/weatherreport" \
 alias vimwiki='/usr/bin/git --git-dir=/home/al/vimwiki/ --work-tree=/home/al'
 alias cdC="cd /home/al/.config/ && ls -lah"
+alias rps="cd /home/anton/repos && ls -A"

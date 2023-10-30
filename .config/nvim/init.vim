@@ -19,6 +19,11 @@ Plug 'vimwiki/vimwiki'
 Plug 'vim-airline/vim-airline'
 Plug 'tpope/vim-commentary'
 Plug 'ap/vim-css-color'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'jayli/vim-easycomplete'
+Plug 'SirVer/ultisnips'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.2' }
 call plug#end()
 
 set title
@@ -31,6 +36,10 @@ set noshowmode
 set noruler
 set laststatus=0
 set noshowcmd
+set ttimeout
+set ttimeoutlen=50
+nnoremap <M-c> <Nop>
+inoremap <M-c> <Nop>
 
 " Some basics:
 	nnoremap c "_c
@@ -67,7 +76,11 @@ set noshowcmd
 	nm <leader>i :call ToggleIPA()<CR>
 	imap <leader>i <esc>:call ToggleIPA()<CR>a
 	nm <leader>q :call ToggleProse()<CR>
-
+" easylsp
+	noremap gr :EasyCompleteReference<CR>
+	noremap gd :EasyCompleteGotoDefinition<CR>
+	noremap rn :EasyCompleteRename<CR>
+	noremap gb :BackToOriginalBuffer<CR>
 " Shortcutting split navigation, saving a keypress:
 	map <C-h> <C-w>h
 	map <C-j> <C-w>j
@@ -126,6 +139,7 @@ set noshowcmd
 	autocmd BufWritePost Xresources,Xdefaults,xresources,xdefaults !xrdb %
 " Recompile dwmblocks on config edit.
 	autocmd BufWritePost ~/.local/src/dwmblocks/config.h !cd ~/.local/src/dwmblocks/; sudo make install && { killall -q dwmblocks;setsid -f dwmblocks }
+	autocmd BufWritePost ~/repos/dwmblocks/blocks.h !cd ~/repos/dwmblocks/; sudo make install && { killall -q dwmblocks;setsid -f dwmblocks }
 
 " Turns off highlighting on the bits of code that are changed, so the line that is changed is highlighted but the actual text that has changed stands out on the line and is readable.
 if &diff

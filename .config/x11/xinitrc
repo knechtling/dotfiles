@@ -14,7 +14,6 @@ else
 	. "$HOME/.xprofile"
 fi
 
-xrandr --output HDMI-A-0 --auto --output DisplayPort-1 --auto --right-of HDMI-A-0
-mopidy &
-ssh-agent &
-dwm
+xrandr --output DisplayPort-0 --auto --output DisplayPort-1 --auto --right-of DisplayPort-0
+dwmblocks 2>&1 >/dev/null &
+while true; do /usr/local/bin/dwm > /dev/null; done;

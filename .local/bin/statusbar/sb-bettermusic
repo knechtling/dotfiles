@@ -1,0 +1,26 @@
+#!/bin/sh
+
+player_status=$(playerctl -a status 2>/dev/null )
+song_metadata=$(playerctl -a metadata 2>/dev/null )
+artist=$(echo "$song_metadata" | grep "artist" | awk -F ' {2,}' '{print $2}')
+title=$(echo "$song_metadata" | grep "title" | awk -F ' {2,}' '{print $2}')
+
+track_info="$artist: $title"
+case $BUTTON in
+	1) playerctl -a play-pause ;;  # Left-click, play/pause
+	2) playerctl -a play-pause ;;  # Middle-click, play/pause
+	3) notify-send "Audio Information" "artist: $artist
+title: $title" ;;  # Right-click, display metadata
+
+	# 4) xdotool key --window "$(xdotool search --onlyvisible --class Chromium | head -n1)" Left ;;  # Scroll up, previous track
+	# 5) xdotool key --window "$(xdotool search --onlyvisible --class Chromium | head -n1)" Right ;;  # Scroll down, next track
+	# *) ;;
+esac
+
+if [ "$player_status" = "Playing" ]; then
+	echo "▶️ $track_info"
+elif [ "$player_status" = "Paused" ]; then
+	echo " $track_info"
+else
+	echo ""
+fi
