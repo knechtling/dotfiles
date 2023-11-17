@@ -1,4 +1,4 @@
-let mapleader ="\\"
+let mapleader =","
 
 if ! filereadable(system('echo -n "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/autoload/plug.vim"'))
 	echo "Downloading junegunn/vim-plug to manage plugins..."
@@ -7,10 +7,11 @@ if ! filereadable(system('echo -n "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/autolo
 	autocmd VimEnter * PlugInstall
 endif
 
-map ,, :keepp /<++><CR>ca<
+map ,, :keepp /<CR>ca<
 imap ,, <esc>:keepp /<++><CR>ca<
 
 call plug#begin(system('echo -n "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/plugged"'))
+Plug 'SirVer/ultisnips'
 Plug 'tpope/vim-surround'
 Plug 'preservim/nerdtree'
 Plug 'junegunn/goyo.vim'
@@ -21,9 +22,9 @@ Plug 'tpope/vim-commentary'
 Plug 'ap/vim-css-color'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'jayli/vim-easycomplete'
-Plug 'SirVer/ultisnips'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.2' }
+Plug 'honza/vim-snippets'
 call plug#end()
 
 set title
@@ -48,6 +49,10 @@ inoremap <M-c> <Nop>
 	syntax on
 	set encoding=utf-8
 	set number relativenumber
+" ultisnips
+let g:UltiSnipsExpandTrigger="<space>"
+let g:UltiSnipsSnippetDirectories=["UltiSnips", "vim-snippets/UltiSnips"]
+autocmd FileType vimwiki UltiSnipsAddFiletypes tex
 " Enable autocompletion:
 	set wildmode=longest,list,full
 " Disables automatic commenting on newline:
@@ -69,6 +74,7 @@ inoremap <M-c> <Nop>
     else
         let NERDTreeBookmarksFile = '~/.vim' . '/NERDTreeBookmarks'
     endif
+
 
 " vimling:
 	nm <leader>d :call ToggleDeadKeys()<CR>
@@ -110,9 +116,8 @@ inoremap <M-c> <Nop>
 	autocmd VimLeave *.tex !texclear %
 
 " Ensure files are read as what I want:
-	let g:vimwiki_ext2syntax = {'.Rmd': 'markdown', '.rmd': 'markdown','.md': 'markdown', '.markdown': 'markdown', '.mdown': 'markdown'}
 	map <leader>ww :VimwikiIndex<CR>
-	let g:vimwiki_list = [{'path': '~/vimwiki/', 'syntax': 'markdown', 'ext': '.wiki'}]
+	let g:vimwiki_list = [{'path': '~/vimwiki/text', 'path_html': '~/vimwiki/html', 'syntax': 'default', 'ext': '.wiki'}]
 	autocmd BufRead,BufNewFile /tmp/calcurse*,~/.calcurse/notes/* set filetype=markdown
 	autocmd BufRead,BufNewFile *.ms,*.me,*.mom,*.man set filetype=groff
 	autocmd BufRead,BufNewFile *.tex set filetype=tex
