@@ -49,6 +49,31 @@ inoremap <M-c> <Nop>
 	syntax on
 	set encoding=utf-8
 	set number relativenumber
+" vimwiki
+function! ConvertToPDF()
+  " Get the full path of the current file
+  let l:fullpath = expand('%:p')
+  " Replace 'text' with 'pdf' in the path
+  let l:pdfpath = substitute(l:fullpath, '/text/', '/pdf/', '')
+  " Change the file extension from .wiki to .pdf
+  let l:pdfpath = substitute(l:pdfpath, '\.wiki$', '.pdf', '')
+
+  " Get the directory path without the file name
+  let l:dirpath = fnamemodify(l:pdfpath, ':h')
+
+  " Create the directory if it doesn't exist
+  if !isdirectory(l:dirpath)
+    call mkdir(l:dirpath, 'p')
+  endif
+
+  " Construct the pandoc command and execute it
+  let l:pandoc_cmd = 'pandoc -f vimwiki -t pdf -o ' . l:pdfpath . ' ' . l:fullpath
+  execute '!'.l:pandoc_cmd
+endfunction
+
+command! VimwikiConvert2Pdf call ConvertToPDF()
+
+nnoremap <C-p> :VimwikiConvert2Pdf<CR>
 " ultisnips
 let g:UltiSnipsExpandTrigger="<space>"
 let g:UltiSnipsSnippetDirectories=["UltiSnips", "vim-snippets/UltiSnips"]
