@@ -11,6 +11,8 @@ map ,, :keepp /<CR>ca<
 imap ,, <esc>:keepp /<++><CR>ca<
 
 call plug#begin(system('echo -n "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/plugged"'))
+Plug 'ervandew/supertab'
+Plug 'jayli/vim-easycomplete'
 Plug 'SirVer/ultisnips'
 Plug 'tpope/vim-surround'
 Plug 'preservim/nerdtree'
@@ -21,10 +23,9 @@ Plug 'vim-airline/vim-airline'
 Plug 'tpope/vim-commentary'
 Plug 'ap/vim-css-color'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-Plug 'jayli/vim-easycomplete'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.2' }
-Plug 'honza/vim-snippets'
+Plug 'Raimondi/delimitMate'
 call plug#end()
 
 set title
@@ -46,6 +47,7 @@ inoremap <M-c> <Nop>
 	nnoremap c "_c
 	set nocompatible
 	filetype plugin on
+	filetype indent on
 	syntax on
 	set encoding=utf-8
 	set number relativenumber
@@ -69,15 +71,26 @@ function! ConvertToPDF()
   " Construct the pandoc command and execute it
   let l:pandoc_cmd = 'pandoc -f vimwiki -t pdf -o ' . l:pdfpath . ' ' . l:fullpath
   execute '!'.l:pandoc_cmd
+  return l:pdfpath
+endfunction
+
+function! ConvertToPDFOpen()
+	let l:pdfpath = ConvertToPDF()
+	execute '!zathura ' . l:pdfpath . ' &'
 endfunction
 
 command! VimwikiConvert2Pdf call ConvertToPDF()
-
+command! VimwikiConvert2PdfOpen call ConvertToPDFOpen()
 nnoremap <C-p> :VimwikiConvert2Pdf<CR>
+nnoremap <F5> :VimwikiConvert2PdfOpen<CR>
+" rebind all tab keybindings
+let g:vimwiki_key_mappings = { 'table_mappings': 0, }
 " ultisnips
-let g:UltiSnipsExpandTrigger="<space>"
-let g:UltiSnipsSnippetDirectories=["UltiSnips", "vim-snippets/UltiSnips"]
-autocmd FileType vimwiki UltiSnipsAddFiletypes tex
+let g:UltiSnipsExpandTrigger = "<tab>"
+let g:UltiSnipsJumpForwardTrigger = "<tab>"
+let g:UltiSnipsJumpBackwardTrigger = "<s-tab>"
+let g:UltiSnipsSnippetDirectories=[$HOME.'/.config/nvim/plugged/vim-easycomplete/snippets/ultisnips']
+let g:UltiSnipsEditSplit="horizontal"
 " Enable autocompletion:
 	set wildmode=longest,list,full
 " Disables automatic commenting on newline:
@@ -198,4 +211,4 @@ nnoremap <leader>h :call ToggleHiddenAll()<CR>
 " Here leader is ";".
 " So ":vs ;cfz" will expand into ":vs /home/<user>/.config/zsh/.zshrc"
 " if typed fast without the timeout.
-silent! source ~/.config/nvim/shortcuts.vim
+silent! source ~/.config/nvim/shortuts.vim
