@@ -4,7 +4,6 @@
 autoload -U colors && colors	# Load colors
 PS1="%B%{$fg[red]%}[%{$fg[yellow]%}%n%{$fg[green]%}@%{$fg[blue]%}%M %{$fg[magenta]%}%~%{$fg[red]%}]%{$reset_color%}$%b "
 setopt autocd			# Automatically cd into typed directory.
-setopt inc_append_history_time  # Saves history after every command instead of only when zsh quits.
 stty stop undef			# Disable ctrl-s to freeze terminal.
 setopt interactive_comments
 
@@ -12,6 +11,11 @@ setopt interactive_comments
 HISTSIZE=10000000
 SAVEHIST=10000000
 HISTFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/history"
+setopt extended_history
+setopt share_history
+setopt hist_ignore_all_dups
+setopt hist_ignore_space
+setopt hist_reduce_blanks
 
 # Load aliases and shortcuts if existent.
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutrc"
@@ -159,32 +163,16 @@ setopt PUSHD_MINUS
 
 # Fast Syntax Highlighting
 F_SH_PLUGIN="/usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
-if [ -f "$F_SH_PLUGIN" ]; then
-    source "$F_SH_PLUGIN"
-else
-    echo "Error: Unable to source fast-syntax-highlighting.plugin.zsh, file not found!"
-fi
+[ -s "$F_SH_PLUGIN" ] && source "$F_SH_PLUGIN" || echo "Error: Unable to source fast-syntax-highlighting.plugin.zsh, file not found!"
 
 # Zsh Autosuggestions
 ZSH_AUTOSUGGESTIONS_PLUGIN="/usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
-if [ -f "$ZSH_AUTOSUGGESTIONS_PLUGIN" ]; then
-    source "$ZSH_AUTOSUGGESTIONS_PLUGIN"
-else
-    echo "Error: Unable to source zsh-autosuggestions.zsh, file not found!"
-fi
+[ -s "$ZSH_AUTOSUGGESTIONS_PLUGIN" ] && source "$ZSH_AUTOSUGGESTIONS_PLUGIN" || echo "Error: Unable to source zsh-autosuggestions.zsh, file not found!"
 
 # Zsh History Substring Search
 ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN="/usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh"
-if [ -f "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" ]; then
-    source "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN"
-else
-    echo "Error: Unable to source zsh-history-substring-search.zsh, file not found!"
-fi
+[ -s "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" ] && source "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" || echo "Error: Unable to source zsh-history-substring-search.zsh, file not found!"
 
 # Autojump
 AUTOJUMP_PLUGIN="/usr/share/autojump/autojump.zsh"
-if [ -f "$AUTOJUMP_PLUGIN" ]; then
-    source "$AUTOJUMP_PLUGIN"
-else
-    echo "Error: Unable to source autojump.zsh, file not found!"
-fi
+[[ -s "$AUTOJUMP_PLUGIN" ]] && source "$AUTOJUMP_PLUGIN" || echo "Error: Unable to source autojump.zsh, file not found!"

@@ -63,3 +63,6 @@ alias vimwiki='/usr/bin/git --git-dir=/home/al/vimwiki/ --work-tree=/home/al'
 alias cdC="cd /home/al/.config/ && ls -lah"
 alias rps="cd /home/anton/repos && ls -A"
 alias ytfzf="ytfzf -t"
+alias stow="stow --dotfiles"
+alias history="history -E"
+alias %=" "

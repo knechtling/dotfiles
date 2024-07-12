@@ -15,24 +15,24 @@
 /* white	7	15 */
 
 /* !! gruvbox: */
-/* *.color0: #1d2021 */
-/* *.color1: #cc241d */
-/* *.color2: #98971a */
-/* *.color3: #d79921 */
-/* *.color4: #458588 */
-/* *.color5: #b16286 */
-/* *.color6: #689d6a */
-/* *.color7: #a89984 */
-/* *.color8: #928374 */
-/* *.color9: #fb4934 */
-/* *.color10: #b8bb26 */
-/* *.color11: #fabd2f */
-/* *.color12: #83a598 */
-/* *.color13: #d3869b */
-/* *.color14: #8ec07c */
-/* *.color15: #ebdbb2 */
-/* *.color256: #1d2021 */
-/* *.color257: #ebdbb2 */
+/**.color0: #1d2021 */
+/**.color1: #cc241d */
+/**.color2: #98971a */
+/**.color3: #d79921 */
+/**.color4: #458588 */
+/**.color5: #b16286 */
+/**.color6: #689d6a */
+/**.color7: #a89984 */
+/**.color8: #928374 */
+/**.color9: #fb4934 */
+/**.color10: #b8bb26 */
+/**.color11: #fabd2f */
+/**.color12: #83a598 */
+/**.color13: #d3869b */
+/**.color14: #8ec07c */
+/**.color15: #ebdbb2 */
+/**.color256: #1d2021 */
+/**.color257: #ebdbb2 */
 
 /* !! gruvbox light: */
 /* *.color0: #fbf1c7 */
@@ -177,41 +177,41 @@
 
 /* ! Contrasty Dark */
 ! special
-*.foreground:   #e5e5e5
-*.background:   #000000
-*.cursorColor:  #e5e5e5
-
-! black
-*.color0:       #000000
-*.color8:       #8f8c8c
-
-! red
-*.color1:       #ff7c4d
-*.color9:       #ff7c4d
-
-! green
-*.color2:       #22ff00
-*.color10:      #22ff00
-
-! yellow
-*.color3:       #ffcc00
-*.color11:      #ffcc00
-
-! blue
-*.color4:       #1a66ff
-*.color12:      #1a66ff
-
-! magenta
-*.color5:       #ff61df
-*.color13:      #ff61df
-
-! cyan
-*.color6:       #00ffff
-*.color14:      #00ffff
-
-! white
-*.color7:       #888888
-*.color15:      #ffffff
+/**.foreground:   #e5e5e5*/
+/**.background:   #000000*/
+/**.cursorColor:  #e5e5e5*/
+/**/
+/*! black*/
+/**.color0:       #000000*/
+/**.color8:       #8f8c8c*/
+/**/
+/*! red*/
+/**.color1:       #ff7c4d*/
+/**.color9:       #ff7c4d*/
+/**/
+/*! green*/
+/**.color2:       #22ff00*/
+/**.color10:      #22ff00*/
+/**/
+/*! yellow*/
+/**.color3:       #ffcc00*/
+/**.color11:      #ffcc00*/
+/**/
+/*! blue*/
+/**.color4:       #1a66ff*/
+/**.color12:      #1a66ff*/
+/**/
+/*! magenta*/
+/**.color5:       #ff61df*/
+/**.color13:      #ff61df*/
+/**/
+/*! cyan*/
+/**.color6:       #00ffff*/
+/**.color14:      #00ffff*/
+/**/
+/*! white*/
+/**.color7:       #888888*/
+/**.color15:      #ffffff*/
 
 
 ! Contrasty White
