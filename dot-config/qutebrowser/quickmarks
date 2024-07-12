@@ -1,0 +1,32 @@
+A Guide to the Zsh Completion with Examples https://thevaluable.dev/zsh-completion-guide-examples/
+zsh-cheatsheet.md · GitHub https://gist.github.com/ClementNerma/1dd94cb0f1884b9c20d1ba0037bdcde2
+(1) VIM - Vi IMproved https://www.reddit.com/r/vim/top/?t=all
+Vim tip: map leader to space! (Example) https://coderwall.com/p/gdowew/vim-tip-map-leader-to-space
+Unified Extensible Firmware Interface - ArchWiki https://wiki.archlinux.org/title/Unified_Extensible_Firmware_Interface#UEFI_variables
+Timesheet https://timesheet.imunixx.de:8443/timeSheet/
+systemd-sysext(8) — Arch manual pages https://man.archlinux.org/man/systemd-sysext.8.de
+Container mit Systemd https://www.linux-magazin.de/ausgaben/2016/02/systemd-nspawn/
+sysext https://av.tib.eu/media/59739
+nspawn commands https://github.com/AlexMekkering/Arch-Linux/blob/master/docs/systemd-nspawn-containers.md
+nspawn ports binding excludes loopback · Issue #6106 · systemd/systemd https://github.com/systemd/systemd/issues/6106
+Portable Services Introduction https://systemd.io/PORTABLE_SERVICES/
+Container Security » ADMIN Magazine https://www.admin-magazine.com/Archive/2022/67/Create-secure-simple-containers-with-the-systemd-tools-Nspawnd-and-Portabled/(offset)/6/(tagID)/15
+Remove all files/directories except for one file - Unix & Linux Stack Exchange https://unix.stackexchange.com/questions/153862/remove-all-files-directories-except-for-one-file
+Provider specific settings - docker-transmission-openvpn https://haugene.github.io/docker-transmission-openvpn/provider-specific/
+media-stack/docker-compose.yml at main · navilg/media-stack · GitHub https://github.com/navilg/media-stack/blob/main/docker-compose.yml
+Radarr http://debian:7878/
+Transmission Web Interface http://debian:9091/transmission/web/#confirm
+Jackett http://debian:9117/UI/Dashboard
+Sonarr http://debian:8989/
+Jellyfin http://debian:8096/web/index.html#!/home.html
+Discover - Jellyseerr http://debian:5055/
+Series - Bazarr http://debian:6767/series
+Lidarr http://debian:8686/
+Understanding and improving Nextcloud Previews – Own your bits http://web.archive.org/web/20220531113922/https://ownyourbits.com/2019/06/29/understanding-and-improving-nextcloud-previews/
+GitHub - nextcloud/previewgenerator: Nextcloud app to do preview generation in the background. https://github.com/nextcloud/previewgenerator
+Vimwiki https://github.com/vimwiki
+knechtling https://github.com/knechtling
+dotfiles repo | tutorial https://www.atlassian.com/git/tutorials/dotfiles
+Welcome to JBoss™ https://timesheet.imunixx.de:8443/
+zle:bindkeys [ZshWiki] https://web.archive.org/web/20180704181216/http://zshwiki.org/home/zle/bindkeys
+Floorplanner - Project 2 https://floorplanner.com/projects/143654877/editor
