@@ -3,8 +3,8 @@ let mapleader=","
 set title
 set bg=light
 set go=a
-set mouse=a
-set nohlsearch
+set mouse=a 
+set nohlsearch 
 set clipboard+=unnamedplus
 set noshowmode
 set noruler
@@ -31,7 +31,6 @@ source ~/.config/nvim/vimtex.vim
 nnoremap <M-c> <Nop>
 inoremap <M-c> <Nop>
 " vimwiki
-
 nnoremap <C-p> :VimwikiConvert2Pdf
 nnoremap <F5> :VimwikiConvert2PdfOpen
 
@@ -109,7 +108,7 @@ let g:easycomplete_nerd_font = 1
 
 " Ensure files are read as what I want:
 	map <leader>ww :VimwikiIndex<CR>
-	let g:vimwiki_list = [{'path': '~/vimwiki/text', 'path_html': '~/vimwiki/html', 'syntax': 'default', 'ext': '.wiki'}]
+	let g:vimwiki_list = [{'path': '~/vimwiki/text', 'path_html': '~/vimwiki/html', 'syntax': 'markdown', 'ext': '.md'}]
 	autocmd BufRead,BufNewFile /tmp/calcurse*,~/.calcurse/notes/* set filetype=markdown
 	autocmd BufRead,BufNewFile *.ms,*.me,*.mom,*.man set filetype=groff
 	autocmd BufRead,BufNewFile *.tex set filetype=tex
@@ -151,5 +150,7 @@ nnoremap <leader>h :call ToggleHiddenAll()<CR>
 " So ":vs ;cfz" will expand into ":vs /home/<user>/.config/zsh/.zshrc"
 " if typed fast without the timeout.
 silent! source ~/.config/nvim/shortuts.vim
+silent! source ~/.config/nvim/md-preview.vim
+silent! source ~/.config/nvim/wiki.vim
 
 
