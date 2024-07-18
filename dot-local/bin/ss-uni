@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Directory to save images
+DIR="/home/anton/vimwiki/images"
+
+# Create directory if it doesn't exist
+mkdir -p "$DIR"
+
+# Filename with date and time
+FILENAME=$(date +'%Y%m%d-%H%M%S').png
+
+# Full path for the image
+FULLPATH="$DIR/$FILENAME"
+
+# Command to take a screenshot with selection
+maim --select "$FULLPATH"
+
+# Check if screenshot was taken successfully
+if [ -f "$FULLPATH" ]; then
+    # Vimwiki image syntax
+    VIMWIKI_SYNTAX="$FULLPATH"
+
+    # Copy Vimwiki syntax to clipboard
+    echo "$VIMWIKI_SYNTAX" | xclip -selection clipboard
+
+    # Optionally, notify the user (if you have `notify-send` installed)
+    notify-send "Screenshot taken" "Saved as $FILENAME and path copied to clipboard."
+else
+    echo "Screenshot capture was cancelled."
+fi
