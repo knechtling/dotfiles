@@ -31,8 +31,8 @@ source ~/.config/nvim/vimtex.vim
 nnoremap <M-c> <Nop>
 inoremap <M-c> <Nop>
 " vimwiki
-nnoremap <C-p> :VimwikiConvert2Pdf
-nnoremap <F5> :VimwikiConvert2PdfOpen
+"nnoremap <C-p> :VimwikiConvert2Pdf
+"nnoremap <F5> :VimwikiConvert2PdfOpen
 
 " ultisnips
 let g:UltiSnipsExpandTrigger = "<C-k>"
@@ -152,5 +152,8 @@ nnoremap <leader>h :call ToggleHiddenAll()<CR>
 silent! source ~/.config/nvim/shortuts.vim
 silent! source ~/.config/nvim/md-preview.vim
 silent! source ~/.config/nvim/wiki.vim
+silent! source ~/.config/nvim/easycomplete.vim
+silent! source ~/.config/nvim/which-key.vim
+silent! source ~/.config/nvim/ultisnips.vim
 
 

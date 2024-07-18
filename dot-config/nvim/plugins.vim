@@ -7,6 +7,7 @@ endif
 
 call plug#begin(system('echo -n "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/plugged"'))
 Plug 'SirVer/ultisnips'
+Plug 'honza/vim-snippets'
 Plug 'jayli/vim-easycomplete'
 Plug 'tpope/vim-surround'
 Plug 'preservim/nerdtree'
@@ -24,4 +25,6 @@ Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
 Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && npx --yes yarn install' }
 Plug 'lervag/wiki.vim'
 Plug 'dhruvasagar/vim-table-mode'
+Plug 'liuchengxu/vim-which-key', { 'on': ['WhichKey', 'WhichKey!'] }
 call plug#end()
+
