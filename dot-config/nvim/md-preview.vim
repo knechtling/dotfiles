@@ -34,7 +34,7 @@ let g:mkdp_open_ip = ''
 " valid: `/path/with\ space/xxx`
 " invalid: `/path/with\\ space/xxx`
 " default: ''
-let g:mkdp_browser = ''
+let g:mkdp_browser = 'qutebrowser'
 
 " set to 1, echo preview page URL in command line when opening preview page
 " default is 0

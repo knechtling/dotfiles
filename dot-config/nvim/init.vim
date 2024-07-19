@@ -155,5 +155,6 @@ silent! source ~/.config/nvim/wiki.vim
 silent! source ~/.config/nvim/easycomplete.vim
 silent! source ~/.config/nvim/which-key.vim
 silent! source ~/.config/nvim/ultisnips.vim
+silent! source ~/.config/nvim/ctrlf.vim
 
 
