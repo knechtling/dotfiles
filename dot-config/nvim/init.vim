@@ -54,7 +54,7 @@ let g:easycomplete_nerd_font = 1
 	set splitbelow splitright
 
 " Nerd tree
-	map <leader>n :NERDTreeToggle
+	map <leader>n :NERDTreeToggle<CR>
 	autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
     if has('nvim')
         let NERDTreeBookmarksFile = stdpath('data') . '/NERDTreeBookmarks'
@@ -69,14 +69,6 @@ let g:easycomplete_nerd_font = 1
 	nm <leader>i :call ToggleIPA()
 	imap <leader>i :call ToggleIPA()a
 	nm <leader>q :call ToggleProse()
-" easylsp
-  	let g:easycomplete_tab_trigger = "<c-n>"
-	let g:easycomplete_shift_tab_trigger = "<c-p>"
-
-	noremap gr :EasyCompleteReference<CR>
-	noremap gd :EasyCompleteGotoDefinition<CR>
-	noremap rn :EasyCompleteRename<CR>
-	noremap gb :BackToOriginalBuffer<CR>
 
 " Shortcutting split navigation, saving a keypress:
 	map <C-h> <C-w>h
@@ -112,12 +104,6 @@ let g:easycomplete_nerd_font = 1
 	autocmd BufRead,BufNewFile /tmp/calcurse*,~/.calcurse/notes/* set filetype=markdown
 	autocmd BufRead,BufNewFile *.ms,*.me,*.mom,*.man set filetype=groff
 	autocmd BufRead,BufNewFile *.tex set filetype=tex
-
-" Telescope
-	nnoremap <leader>ff <cmd>Telescope find_files<cr>
-	nnoremap <leader>fg <cmd>Telescope live_grep<cr>
-	nnoremap <leader>fb <cmd>Telescope buffers<cr>
-	nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 
 " Save file as sudo on files that require root permission
 	cabbrev w!! execute 'silent! write !sudo tee % >/dev/null' <bar> edit!
@@ -156,5 +142,5 @@ silent! source ~/.config/nvim/easycomplete.vim
 silent! source ~/.config/nvim/which-key.vim
 silent! source ~/.config/nvim/ultisnips.vim
 silent! source ~/.config/nvim/ctrlf.vim
-
-
+silent! source ~/.config/nvim/telescope.vim
+silent! source ~/.config/nvim/treesitter.vim
