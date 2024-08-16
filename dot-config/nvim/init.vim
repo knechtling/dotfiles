@@ -35,9 +35,9 @@ inoremap <M-c> <Nop>
 "nnoremap <F5> :VimwikiConvert2PdfOpen
 
 " ultisnips
-let g:UltiSnipsExpandTrigger = "<C-k>"
-let g:UltiSnipsJumpForwardTrigger = "<C-k>"
-let g:UltiSnipsSnippetDirectories=[$HOME.'/.config/nvim/plugged/vim-easycomplete/snippets/ultisnips']
+let g:UltiSnipsExpandTrigger = "<C-j>"
+let g:UltiSnipsJumpForwardTrigger = "<C-j>"
+let g:UltiSnipsSnippetDirectories=[$HOME.'/.config/nvim/plugged/vim-snippets/snippets']
 let g:UltiSnipsEditSplit="horizontal"
 let g:easycomplete_nerd_font = 1
 " Enable autocompletion:
@@ -135,12 +135,15 @@ nnoremap <leader>h :call ToggleHiddenAll()<CR>
 " Here leader is ";".
 " So ":vs ;cfz" will expand into ":vs /home/<user>/.config/zsh/.zshrc"
 " if typed fast without the timeout.
+
+silent! source ~/.config/nvim/lsp_zero.vim
+silent! source ~/.config/nvim/jdtls.vim
 silent! source ~/.config/nvim/shortuts.vim
 silent! source ~/.config/nvim/md-preview.vim
 silent! source ~/.config/nvim/wiki.vim
-silent! source ~/.config/nvim/easycomplete.vim
+" silent! source ~/.config/nvim/easycomplete.vim
 silent! source ~/.config/nvim/which-key.vim
-silent! source ~/.config/nvim/ultisnips.vim
+" silent! source ~/.config/nvim/ultisnips.vim
 silent! source ~/.config/nvim/ctrlf.vim
 silent! source ~/.config/nvim/telescope.vim
 silent! source ~/.config/nvim/treesitter.vim
