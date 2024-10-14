@@ -1,2 +1,2 @@
 ZDOTDIR=$HOME/.config/zsh
-[[ -f $XDG_CONFIG_HOME/shell/profile ]] && . $XDG_CONFIG_HOM/shell/profile
+[[ -f $XDG_CONFIG_HOME/shell/profile ]] && . $XDG_CONFIG_HOME/shell/profile

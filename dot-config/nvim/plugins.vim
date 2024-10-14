@@ -7,12 +7,9 @@ endif
 
 call plug#begin(system('echo -n "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/plugged"'))
 Plug 'rrethy/vim-hexokinase', { 'do': 'make hexokinase' }
-" Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 " native lsp plugins
 Plug 'neovim/nvim-lspconfig'
-Plug 'hrsh7th/nvim-cmp'
-Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'VonHeikemen/lsp-zero.nvim', {'branch': 'v4.x'}
 Plug 'mfussenegger/nvim-jdtls'
 
