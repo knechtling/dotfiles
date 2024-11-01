@@ -66,3 +66,4 @@ alias ytfzf="ytfzf -t"
 alias stow="stow --dotfiles"
 alias history="history -E"
 alias ansi="\e["
+alias kvim='NVIM_APPNAME="nvim-kickstart" nvim'

@@ -175,42 +175,42 @@
 /* *.color256: 0#1d2021 */
 /* *.color257: 15#ebdbb2 */
 
-/* ! Contrasty Dark */
-*.foreground:   #e5e5e5
-*.background:   #000000
-*.cursorColor:  #e5e5e5
+/* /1* ! Contrasty Dark *1/ */
+/* *.foreground:   #e5e5e5 */
+/* *.background:   #000000 */
+/* *.cursorColor:  #e5e5e5 */
 
-! black
-*.color0:       #000000
-*.color8:       #8f8c8c
+/* ! black */
+/* *.color0:       #000000 */
+/* *.color8:       #8f8c8c */
 
-! red
-*.color1:       #ff7c4d
-*.color9:       #ff7c4d
+/* ! red */
+/* *.color1:       #ff7c4d */
+/* *.color9:       #ff7c4d */
 
-! green
-*.color2:       #22ff00
-*.color10:      #22ff00
+/* ! green */
+/* *.color2:       #22ff00 */
+/* *.color10:      #22ff00 */
 
-! yellow
-*.color3:       #ffcc00
-*.color11:      #ffcc00
+/* ! yellow */
+/* *.color3:       #ffcc00 */
+/* *.color11:      #ffcc00 */
 
-! blue
-*.color4:       #1a66ff
-*.color12:      #1a66ff
+/* ! blue */
+/* *.color4:       #1a66ff */
+/* *.color12:      #1a66ff */
 
-! magenta
-*.color5:       #ff61df
-*.color13:      #ff61df
+/* ! magenta */
+/* *.color5:       #ff61df */
+/* *.color13:      #ff61df */
 
-! cyan
-*.color6:       #00ffff
-*.color14:      #00ffff
+/* ! cyan */
+/* *.color6:       #00ffff */
+/* *.color14:      #00ffff */
 
-! white
-*.color7:       #888888
-*.color15:      #ffffff
+/* ! white */
+/* *.color7:       #888888 */
+/* *.color15:      #ffffff */
 
 
 ! Contrasty White
