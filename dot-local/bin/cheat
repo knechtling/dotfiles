@@ -136,16 +136,16 @@ get_bm_files () {
 
 # Script Control Flow
 case "$1" in
-    dwm) (print_welcome && get_constants && get_keybindings) | less ;;
-    st) (print_welcome && get_shortcuts) | less ;;
-    lf) get_lf_bindings | less ;;
-    bm) (print_welcome && get_bm_dirs && get_bm_files) | less ;;
+    dwm) print_welcome && get_constants && get_keybindings ;;
+    st) print_welcome && get_shortcuts ;;
+    lf) get_lf_bindings ;;
+    bm) print_welcome && get_bm_dirs && get_bm_files ;;
     help)
         printf "\n%b\n" "${RED}Usage:${NC}"
         printf "%b\n" "$0 {dwm|st|lf|bm|help}"
         ;;
     @)
-        (print_welcome && get_constants && get_keybindings && get_shortcuts && get_lf_bindings && get_bm_dirs && get_bm_files) | less
+        (print_welcome && get_constants && get_keybindings && get_shortcuts && get_lf_bindings && get_bm_dirs && get_bm_files)
         ;;
     *)
         (print_welcome && get_constants && get_keybindings && get_shortcuts && get_lf_bindings && get_bm_dirs && get_bm_files) | grep -i "$1"
