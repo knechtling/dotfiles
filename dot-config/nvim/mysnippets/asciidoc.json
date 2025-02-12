@@ -1,0 +1,28 @@
+{
+  "Protocol Template": {
+    "prefix": "protocol",
+    "body": [
+      "= Protokoll Gruppe 01",
+      "",
+      "Treffen am ${1:${CURRENT_DATE}}",
+      "",
+      "Ort:      Ort des Treffens +",
+      "Beginn:   ${2:${CURRENT_TIME}} Uhr +",
+      "Ende:     xx:xx Uhr",
+      "",
+      "__Schriftführer:__",
+      "Anton",
+      "",
+      "*Nächstes Treffen:* +",
+      "${3:${NEXT_MONDAY_DATE}}, 14:50 Uhr, APB",
+      "",
+      "__Teilnehmer:__",
+      "//Tabellarisch oder Aufzählung, Kennzeichnung von Teilnehmern mit besonderer Rolle (z.B. Kunde)",
+      "",
+      "- Teilnehmer 1",
+      "- Teilnehmer 2",
+      "- ..."
+    ],
+    "description": "Protocol template for AsciiDoc with prefilled details."
+  }
+}
