@@ -45,8 +45,8 @@ if [ -d /etc/X11/xinit/xinitrc.d ] ; then
  unset f
 fi
 
-xrandr --output DisplayPort-0 --auto --output DisplayPort-1 --auto --right-of DisplayPort-0
-dwmblocks 2>&1 >/dev/null &
+#xrandr --output DisplayPort-0 --auto --output DisplayPort-1 --auto --right-of DisplayPort-0
+#dwmblocks 2>&1 >/dev/null &
 while true; do /usr/local/bin/dwm > /dev/null; done;
 
 
