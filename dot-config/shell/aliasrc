@@ -59,11 +59,7 @@ alias \
 	magit="nvim -c MagitOnly" \
 	ref="shortcuts >/dev/null; source ${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutrc ; source ${XDG_CONFIG_HOME:-$HOME/.config}/shell/zshnameddirrc" \
 	weath="less -S ${XDG_CACHE_HOME:-$HOME/.cache}/weatherreport" \
-alias vimwiki='/usr/bin/git --git-dir=/home/al/vimwiki/ --work-tree=/home/al'
-alias cdC="cd /home/al/.config/ && ls -lah"
-alias rps="cd /home/anton/repos && ls -A"
-alias ytfzf="ytfzf -t"
-alias stow="stow --dotfiles"
-alias history="history -E"
-alias ansi="\e["
-alias vim='/home/al/nvim-linux64/bin/nvim'
+  alias ytfzf="ytfzf -t" \
+  alias stow="stow --dotfiles" \
+  alias history="history -E" \
+  alias ansi="\e["
