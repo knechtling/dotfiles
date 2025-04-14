@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Start dwl with slstatus bar
+slstatus -s | dbus-run-session dwl -s dwl-startup.sh
