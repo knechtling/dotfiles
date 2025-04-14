@@ -2,14 +2,9 @@ return {
   {
     "stevearc/conform.nvim",
     opts = {
-      formattery_by_ft = {
-        c = { "clang-format" },
-      },
       formatters = {
         clang_format = {
-          env = {
-            ColumnLimit = 100,
-          },
+          prepend_args = { "--style=file", "--fallback-style=LLVM" },
         },
       },
     },
