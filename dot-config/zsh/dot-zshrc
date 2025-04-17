@@ -12,16 +12,19 @@ HISTSIZE=10000000
 SAVEHIST=10000000
 HISTFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/history"
 setopt extended_history
+# Share history in all terminal sessions
 setopt share_history
+
 setopt hist_ignore_all_dups
 setopt hist_ignore_space
 setopt hist_reduce_blanks
 
-# Load aliases and shortcuts if existent.
+# Load aliases and shortcuts and functions if existent.
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutrc"
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/profile" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/profile"
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/aliasrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/aliasrc"
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/zshnameddirrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/zshnameddirrc"
+[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/functions" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/functions"
 
 # Basic auto/tab complete:
 autoload -U compinit
@@ -95,6 +98,7 @@ bindkey "^[f" forward-word
 bindkey "^[d" kill-word
 bindkey "^l" clear-screen
 bindkey "^_" undo
+bindkey -M vicmd "." insert-last-word
 
 # create a zkbd compatible hash;
 # to add other keys to this hash, see: man 5 terminfo
@@ -163,7 +167,7 @@ setopt PUSHD_MINUS
 ## Load plugins; should be last.
 
 # Fast Syntax Highlighting
-F_SH_PLUGIN="/usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+F_SH_PLUGIN="/usr/share/zsh/plugins/fast-syntax-highlighting/F-Sy-H.plugin.zsh"
 [ -s "$F_SH_PLUGIN" ] && source "$F_SH_PLUGIN" || echo "Error: Unable to source fast-syntax-highlighting.plugin.zsh, file not found!"
 
 # Zsh Autosuggestions
@@ -175,5 +179,5 @@ ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN="/usr/share/zsh/plugins/zsh-history-substrin
 [ -s "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" ] && source "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" || echo "Error: Unable to source zsh-history-substring-search.zsh, file not found!"
 
 # Autojump
-AUTOJUMP_PLUGIN="/usr/share/autojump/autojump.zsh"
+AUTOJUMP_PLUGIN="$HOME/.autojump/etc/profile.d/autojump.sh"
 [[ -s "$AUTOJUMP_PLUGIN" ]] && source "$AUTOJUMP_PLUGIN" || echo "Error: Unable to source autojump.zsh, file not found!"
