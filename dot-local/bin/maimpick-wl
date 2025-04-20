@@ -1,0 +1,29 @@
+#!/bin/sh
+
+output_dir="${HOME}/Pictures/Screenshots"
+mkdir -p "$output_dir"
+timestamp="$(date '+%y%m%d-%H%M-%S')"
+output="${output_dir}/screenshot-${timestamp}.png"
+clip_cmd="wl-copy --type image/png"
+choice=$(printf "selected area\nfull screen\nselected area (copy)\nfull screen (copy)" | wmenu -l 4 -p "Screenshot which area?")
+
+case "$choice" in
+"selected area")
+  grim -g "$(slurp)" "$output"
+  ln -sf "$output" "$output_dir/last.png"
+  notify-send -a screenshot "Screenshot saved" "Left click to copy path/Right Click to open"
+  ;;
+"full screen")
+  grim "$output"
+  ln -sf "$output" "$output_dir/last.png"
+  notify-send -a screenshot "Screenshot saved" "Left click to copy path/Right Click to open"
+  ;;
+"selected area (copy)")
+  grim -g "$(slurp)" - | ${clip_cmd}
+  notify-send -a screenshot "Screenshot copied to clipboard"
+  ;;
+"full screen (copy)")
+  grim - | ${clip_cmd}
+  notify-send -a screenshot "Screenshot copied to clipboard"
+  ;;
+esac
