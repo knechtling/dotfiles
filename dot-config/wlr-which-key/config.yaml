@@ -1,146 +1,74 @@
-# ~/.config/wlr-which-key/config.yaml
+# Theming
+font: JetBrainsMono Nerd Font 12
+background: "#282828d0"
+color: "#fbf1c7"
+border: "#8ec07c"
+separator: " ➜ "
+border_width: 2
+corner_r: 10
+padding: 15 # Defaults to corner_r
 
-trigger: Control_R
-timeout: 5000
+# Anchor and margin
+anchor: center # One of center, left, right, top, bottom, bottom-left, top-left, etc.
+# Only relevant when anchor is not center
+margin_right: 0
+margin_bottom: 0
+margin_left: 0
+margin_top: 0
 
-bindings:
-  - key: MOD+Return
-    name: Terminal
-    exec: foot
+menu:
+  "u":
+    desc: Utilities
+    submenu:
+      "BackSpace": { desc: System Actions, cmd: "sysact" }
+      "F3": { desc: Display Select, cmd: "displayselect" }
+      "F4": { desc: Audio Mixer, cmd: "$TERMINAL -e pulsemixer" }
+      "F7": { desc: Unicode Picker, cmd: "dmenuunicode" }
+      "F8": { desc: Screenshot, cmd: "maimpick-wl" }
+      "m": { desc: Mounter, cmd: "mounter" }
+      "u": { desc: Unmounter, cmd: "unmounter" }
+      "d": { desc: Display Configuration, cmd: "wdisplays" }
+      "s": { desc: System Monitor, cmd: "$TERMINAL -e btop" }
 
-  - key: MOD+d
-    name: Launcher (dmenu)
-    exec: dmenu_run
+  "m":
+    desc: Media
+    submenu:
+      "minus": { desc: Volume -5%, cmd: "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-" }
+      "plus": { desc: Volume +5%, cmd: "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+" }
+      "m": { desc: Toggle Mute, cmd: "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle" }
+      "n": { desc: Next Track, cmd: "mpc next" }
+      "p": { desc: Previous Track, cmd: "mpc prev" }
+      "Return": { desc: Play, cmd: "mpc play" }
+      "space": { desc: Pause, cmd: "mpc pause" }
+      "s": { desc: Stop, cmd: "mpc stop" }
 
-  - key: MOD+Shift+q
-    name: Close Window
-    exec: dwl-msg client kill
+  "b":
+    desc: Control Center
+    submenu:
+      "u": { desc: Increase Brightness, cmd: "brightnessctl set +15%" }
+      "d": { desc: Decrease Brightness, cmd: "brightnessctl set 15%-" }
 
-  - key: MOD+q
-    name: Restart dwl
-    exec: dwl-msg server restart
+  "a":
+    desc: Apps
+    submenu:
+      "p": { desc: Music Player, cmd: "$MUSICPLAYER" }
+      "e": { desc: Email Client, cmd: "$EMAILCLIENT" }
+      "y": { desc: Terminal YouTube Browser, cmd: "$TERMINAL -e ytfzf -t" }
+      "n": { desc: Notes (VimWiki), cmd: "$TERMINAL -e nvim -c WikiIndex" }
+      "r": { desc: Terminal File Manager, cmd: "$TERMINAL -e lfub" }
 
-  - key: MOD+Shift+e
-    name: Exit dwl
-    exec: dwl-msg server exit
+  "l":
+    desc: Layouts
+    submenu:
+      "t": { desc: Tiled Layout, cmd: "dwlmsg -s -l 0" }
+      "f": { desc: Floating Layout, cmd: "dwlmsg -s -l 1" }
+      "m": { desc: Monocle Layout, cmd: "dwlmsg -s -l 2" }
 
-  - key: MOD+Shift+r
-    name: Reload Config
-    exec: dwl-msg server reload
-
-  - key: MOD+j
-    name: Focus Next
-    exec: dwl-msg client focus next
-
-  - key: MOD+k
-    name: Focus Prev
-    exec: dwl-msg client focus prev
-
-  - key: MOD+Shift+j
-    name: Move Down
-    exec: dwl-msg client move down
-
-  - key: MOD+Shift+k
-    name: Move Up
-    exec: dwl-msg client move up
-
-  - key: MOD+h
-    name: Resize Shrink
-    exec: dwl-msg layout setfact -0.05
-
-  - key: MOD+l
-    name: Resize Grow
-    exec: dwl-msg layout setfact +0.05
-
-  - key: MOD+space
-    name: Toggle Layout
-    exec: dwl-msg layout toggle
-
-  - key: MOD+Shift+space
-    name: Toggle Floating
-    exec: dwl-msg client toggle floating
-
-  - key: MOD+f
-    name: Toggle Fullscreen
-    exec: dwl-msg client toggle fullscreen
-
-  - key: MOD+t
-    name: Tiled Layout
-    exec: dwl-msg layout set tile
-
-  - key: MOD+m
-    name: Monocle Layout
-    exec: dwl-msg layout set monocle
-
-  - key: MOD+b
-    name: Toggle Bar
-    exec: dwl-msg bar toggle
-
-  - key: MOD+0
-    name: View All Tags
-    exec: dwl-msg tag view all
-
-  - key: MOD+Shift+0
-    name: Tag All Tags
-    exec: dwl-msg client tag all
-
-  - key: MOD+comma
-    name: Focus Monitor Prev
-    exec: dwl-msg monitor focus prev
-
-  - key: MOD+period
-    name: Focus Monitor Next
-    exec: dwl-msg monitor focus next
-
-  - key: MOD+Shift+comma
-    name: Send to Monitor Prev
-    exec: dwl-msg client sendmon prev
-
-  - key: MOD+Shift+period
-    name: Send to Monitor Next
-    exec: dwl-msg client sendmon next
-
-  # Tags 1-9
-  {% for i in range(1, 10) %}
-  - key: MOD+{{ i }}
-    name: View Tag {{ i }}
-    exec: dwl-msg tag view {{ i }}
-
-  - key: MOD+Shift+{{ i }}
-    name: Tag Client to {{ i }}
-    exec: dwl-msg client tag {{ i }}
-  {% endfor %}
-
-  # Custom Tools
-  - key: MOD+Ctrl+s
-    name: System Actions
-    exec: ~/.local/bin/sysact
-
-  - key: MOD+Ctrl+d
-    name: Display Select
-    exec: ~/.local/bin/displayselect
-
-  - key: MOD+Ctrl+p
-    name: Pulsemixer
-    exec: foot pulsemixer
-
-  # Media Controls
-  - key: XF86AudioRaiseVolume
-    name: Volume Up
-    exec: pactl set-sink-volume @DEFAULT_SINK@ +5%
-
-  - key: XF86AudioLowerVolume
-    name: Volume Down
-    exec: pactl set-sink-volume @DEFAULT_SINK@ -5%
-
-  - key: XF86AudioMute
-    name: Mute
-    exec: pactl set-sink-mute @DEFAULT_SINK@ toggle
-
-  - key: XF86MonBrightnessUp
-    name: Brightness Up
-    exec: brightnessctl set +10%
-
-  - key: XF86MonBrightnessDown
-    name: Brightness Down
-    exec: brightnessctl set 10%-
+  "x":
+    desc: Session
+    submenu:
+      "q": { desc: Quit dwl, cmd: "dwlmsg -s -c quit" }
+      "s": { desc: Suspend (systemd), cmd: "systemctl suspend" }
+      "h": { desc: Hibernate (systemd), cmd: "systemctl hibernate" }
+      "r": { desc: Reboot (systemd), cmd: "systemctl reboot" }
+      "p": { desc: Poweroff (systemd), cmd: "systemctl poweroff" }
