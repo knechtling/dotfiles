@@ -1,0 +1,146 @@
+# ~/.config/wlr-which-key/config.yaml
+
+trigger: Control_R
+timeout: 5000
+
+bindings:
+  - key: MOD+Return
+    name: Terminal
+    exec: foot
+
+  - key: MOD+d
+    name: Launcher (dmenu)
+    exec: dmenu_run
+
+  - key: MOD+Shift+q
+    name: Close Window
+    exec: dwl-msg client kill
+
+  - key: MOD+q
+    name: Restart dwl
+    exec: dwl-msg server restart
+
+  - key: MOD+Shift+e
+    name: Exit dwl
+    exec: dwl-msg server exit
+
+  - key: MOD+Shift+r
+    name: Reload Config
+    exec: dwl-msg server reload
+
+  - key: MOD+j
+    name: Focus Next
+    exec: dwl-msg client focus next
+
+  - key: MOD+k
+    name: Focus Prev
+    exec: dwl-msg client focus prev
+
+  - key: MOD+Shift+j
+    name: Move Down
+    exec: dwl-msg client move down
+
+  - key: MOD+Shift+k
+    name: Move Up
+    exec: dwl-msg client move up
+
+  - key: MOD+h
+    name: Resize Shrink
+    exec: dwl-msg layout setfact -0.05
+
+  - key: MOD+l
+    name: Resize Grow
+    exec: dwl-msg layout setfact +0.05
+
+  - key: MOD+space
+    name: Toggle Layout
+    exec: dwl-msg layout toggle
+
+  - key: MOD+Shift+space
+    name: Toggle Floating
+    exec: dwl-msg client toggle floating
+
+  - key: MOD+f
+    name: Toggle Fullscreen
+    exec: dwl-msg client toggle fullscreen
+
+  - key: MOD+t
+    name: Tiled Layout
+    exec: dwl-msg layout set tile
+
+  - key: MOD+m
+    name: Monocle Layout
+    exec: dwl-msg layout set monocle
+
+  - key: MOD+b
+    name: Toggle Bar
+    exec: dwl-msg bar toggle
+
+  - key: MOD+0
+    name: View All Tags
+    exec: dwl-msg tag view all
+
+  - key: MOD+Shift+0
+    name: Tag All Tags
+    exec: dwl-msg client tag all
+
+  - key: MOD+comma
+    name: Focus Monitor Prev
+    exec: dwl-msg monitor focus prev
+
+  - key: MOD+period
+    name: Focus Monitor Next
+    exec: dwl-msg monitor focus next
+
+  - key: MOD+Shift+comma
+    name: Send to Monitor Prev
+    exec: dwl-msg client sendmon prev
+
+  - key: MOD+Shift+period
+    name: Send to Monitor Next
+    exec: dwl-msg client sendmon next
+
+  # Tags 1-9
+  {% for i in range(1, 10) %}
+  - key: MOD+{{ i }}
+    name: View Tag {{ i }}
+    exec: dwl-msg tag view {{ i }}
+
+  - key: MOD+Shift+{{ i }}
+    name: Tag Client to {{ i }}
+    exec: dwl-msg client tag {{ i }}
+  {% endfor %}
+
+  # Custom Tools
+  - key: MOD+Ctrl+s
+    name: System Actions
+    exec: ~/.local/bin/sysact
+
+  - key: MOD+Ctrl+d
+    name: Display Select
+    exec: ~/.local/bin/displayselect
+
+  - key: MOD+Ctrl+p
+    name: Pulsemixer
+    exec: foot pulsemixer
+
+  # Media Controls
+  - key: XF86AudioRaiseVolume
+    name: Volume Up
+    exec: pactl set-sink-volume @DEFAULT_SINK@ +5%
+
+  - key: XF86AudioLowerVolume
+    name: Volume Down
+    exec: pactl set-sink-volume @DEFAULT_SINK@ -5%
+
+  - key: XF86AudioMute
+    name: Mute
+    exec: pactl set-sink-mute @DEFAULT_SINK@ toggle
+
+  - key: XF86MonBrightnessUp
+    name: Brightness Up
+    exec: brightnessctl set +10%
+
+  - key: XF86MonBrightnessDown
+    name: Brightness Down
+    exec: brightnessctl set 10%-
