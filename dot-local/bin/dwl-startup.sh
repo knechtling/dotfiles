@@ -2,5 +2,5 @@
 
 mako &
 setbg ~/.local/share/wallpapers
-clipmenud &
+wl-paste --watch cliphist store
 foot --server &
