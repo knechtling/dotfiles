@@ -1,18 +1,35 @@
 #!/bin/sh
 
-# The famous "get a menu of emojis to copy" script.
+# Emoji picker script compatible with both X11 and Wayland
+# Dependencies:
+# - wofi (Wayland) or dmenu (X11)
+# - wtype (Wayland typing) or xdotool (X11 typing)
+# - wl-copy (Wayland clipboard) or xclip (X11 clipboard)
+# - notify-send
 
-# Get user selection via dmenu from emoji file.
-chosen=$(cut -d ';' -f1 ~/.local/share/larbs/chars/* | dmenu -i -l 30 | sed "s/ .*//")
+# Choose display protocol
 
-# Exit if none chosen.
+menu_cmd="bemenu --prompt 'Pick an emoji:' --fn 'monospace 12' --line-height 20 --borders 1 --width-factor 0.5"
+if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
+  menu_cmd="wmenu -i -l 30"
+  type_cmd="wtype"
+  copy_cmd="wl-copy"
+else
+  menu_cmd="dmenu -i -l 30"
+  type_cmd="xdotool type"
+  copy_cmd="xclip -selection clipboard"
+fi
+
+# Get user selection from emoji list
+chosen=$(cut -d ';' -f1 ~/.local/share/larbs/chars/* | eval "$menu_cmd" | sed "s/ .*//")
+
+# Exit if nothing selected
 [ -z "$chosen" ] && exit
 
-# If you run this command with an argument, it will automatically insert the
-# character. Otherwise, show a message that the emoji has been copied.
+# Type or copy based on argument
 if [ -n "$1" ]; then
-	xdotool type "$chosen"
+  eval "$type_cmd \"$chosen\""
 else
-	printf "$chosen" | xclip -selection clipboard
-	notify-send "'$chosen' copied to clipboard." &
+  printf "%s" "$chosen" | $copy_cmd
+  notify-send "'$chosen' copied to clipboard." &
 fi
