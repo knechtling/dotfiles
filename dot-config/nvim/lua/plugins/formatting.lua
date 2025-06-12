@@ -4,8 +4,11 @@ return {
     opts = {
       formatters = {
         clang_format = {
-          prepend_args = { "--style=file", "--fallback-style=LLVM" },
+          prepend_args = { "--style=Microsoft" },
         },
+      },
+      formatters_by_ft = {
+        c = { "clang_format" },
       },
     },
   },
