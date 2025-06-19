@@ -3,14 +3,14 @@
 # This file runs when a DM logs you into a graphical session.
 # If you use startx/xinit like a Chad, this file will also be sourced.
 
-setbg ~/.local/share/wallpapers & # set the background with the `setbg` script
-# xrdb ${XDG_CONFIG_HOME:-$HOME/.config}/x11/xresources & # Uncomment to use Xresources colors/settings on startup
-xsettingsd & # Start the settings daemon.
-remaps &     # run the remaps script, switching caps/esc and more; check it for more info
-xcompmgr &   # start the compositor for transparency and shadows
-dunst &      # notifications daemon
-unclutter &  # hide the mouse cursor after a few seconds of inactivity
-clipmenud &  # clipboard manager daemon
+setbg ~/.local/share/wallpapers &                       # set the background with the `setbg` script
+xrdb ${XDG_CONFIG_HOME:-$HOME/.config}/x11/xresources & # Uncomment to use Xresources colors/settings on startup
+xsettingsd &                                            # Start the settings daemon.
+remaps &                                                # run the remaps script, switching caps/esc and more; check it for more info
+xcompmgr &                                              # start the compositor for transparency and shadows
+dunst &                                                 # notifications daemon
+unclutter &                                             # hide the mouse cursor after a few seconds of inactivity
+clipmenud &                                             # clipboard manager daemon
 
 # xidlehook is a program that runs commands on idle. Here, we use it to dim the screen after 60 seconds of inactivity.
 xidlehook --not-when-fullscreen --not-when-audio \
