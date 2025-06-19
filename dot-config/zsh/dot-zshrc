@@ -175,7 +175,7 @@ setopt PUSHD_MINUS
 ## Load plugins; should be last.
 
 # Fast Syntax Highlighting
-F_SH_PLUGIN="/usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+F_SH_PLUGIN="/usr/share/zsh/plugins/fast-syntax-highlighting/F-Sy-H.plugin.zsh"
 [ -s "$F_SH_PLUGIN" ] && source "$F_SH_PLUGIN" || echo "Error: Unable to source fast-syntax-highlighting.plugin.zsh, file not found!"
 
 # Zsh Autosuggestions
@@ -187,5 +187,5 @@ ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN="/usr/share/zsh/plugins/zsh-history-substrin
 [ -s "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" ] && source "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" || echo "Error: Unable to source zsh-history-substring-search.zsh, file not found!"
 
 # Autojump
-AUTOJUMP_PLUGIN="/usr/share/autojump/autojump.zsh"
+AUTOJUMP_PLUGIN="/usr/share/zsh/plugins/autojump/bin/autojump.zsh"
 [[ -s "$AUTOJUMP_PLUGIN" ]] && source "$AUTOJUMP_PLUGIN" || echo "Error: Unable to source autojump.zsh, file not found!"
