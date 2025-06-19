@@ -2,8 +2,19 @@
 
 # Enable colors and change prompt:
 autoload -U colors && colors	# Load colors
-# PS1="%B%{$fg[red]%}[%{$fg[yellow]%}%n%{$fg[green]%}@%{$fg[blue]%}%M %{$fg[magenta]%}%~%{$fg[red]%}]%{$reset_color%}$%b "
-PS1=$'➜\u00A0'
+
+# Enable prompt substitution
+setopt prompt_subst
+autoload -Uz vcs_info
+precmd() { vcs_info }
+zstyle ':vcs_info:git:*' formats '(%b)'
+
+# Git status function for prompt
+
+PS1=$'%F{blue}%~%f %F{magenta}${vcs_info_msg_0_}%f %F{green}➜%f\u00A0'
+# PROMPT=$'%F{blue}%~%f %F{magenta}$(__git_ps1 " (%s)")%f %F{green}➜%f\u00A0'
+
+
 setopt autocd			# Automatically cd into typed directory.
 stty stop undef			# Disable ctrl-s to freeze terminal.
 setopt interactive_comments
