@@ -108,6 +108,9 @@ bindkey "^[d" kill-word
 bindkey "^l" clear-screen
 bindkey "^_" undo
 
+# Override default vi mode behavior for ESC + . to repeat last argument (like bash)
+bindkey '\e.' insert-last-word
+
 # create a zkbd compatible hash;
 # to add other keys to this hash, see: man 5 terminfo
 typeset -g -A key
