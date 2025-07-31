@@ -1,5 +1,12 @@
 #!/bin/sh
 
+for cmd in "slurp" "grim"; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    notify-send "Error: $cmd is not installed or not in path"
+    exit 1
+  fi
+done
+
 output_dir="${HOME}/Pictures/Screenshots"
 mkdir -p "$output_dir"
 timestamp="$(date '+%y%m%d-%H%M-%S')"
