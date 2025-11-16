@@ -36,47 +36,14 @@ wmpid() {
   printf '%s\n' "${tree%%)*}"
 }
 
-menu_items="🔒 lock
-🚪 leave $WM
-♻️ renew $WM
-🐻 hibernate
-🔃 reboot
-🖥️ shutdown
-💤 sleep"
-
-choice="$(printf '%s\n' "$menu_items" | wmenu -i -p 'Action: ')"
-
-case "$choice" in
-'🔒 lock')
-  need_cmd waylock
-  waylock -z
-  ;;
-"🚪 leave $WM")
-  kill -TERM "$(wmpid)"
-  ;;
-"♻️ renew $WM")
-  pid="$(wmpid)"
-  if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
-    kill -HUP "$pid"
-  else
-    notify "Unable to find running $WM process."
-  fi
-  ;;
-'🐻 hibernate')
-  need_cmd waylock "$ctl"
-  waylock -z && "$ctl" hibernate -i
-  ;;
-'💤 sleep')
-  need_cmd waylock "$ctl"
-  waylock -z && "$ctl" suspend -i
-  ;;
-'🔃 reboot')
-  "$ctl" reboot -i
-  ;;
-'🖥️ shutdown')
-  "$ctl" poweroff -i
-  ;;
-*)
-  exit 1
-  ;;
+case "$(printf "🔒 lock\n🚪 leave $WM\n♻️ renew $WM\n🐻 hibernate\n🔃 reboot\n🖥️shutdown\n💤 sleep\n📺 display off" | wmenu -i -p 'Action: ')" in
+'🔒 lock') waylock -z ;;
+"🚪 leave $WM") kill -TERM "$(wmpid)" ;;
+"♻️ renew $WM") kill -HUP "$(wmpid)" ;;
+'🐻 hibernate') waylock $ctl hibernate -i ;;
+'💤 sleep') waylock -z $ctl suspend -i ;;
+'🔃 reboot') $ctl reboot -i ;;
+'🖥️shutdown') $ctl poweroff -i ;;
+# '📺 display off') xset dpms force off ;;
+*) exit 1 ;;
 esac
