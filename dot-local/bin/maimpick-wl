@@ -1,36 +1,54 @@
 #!/bin/sh
 
-for cmd in "slurp" "grim"; do
-  if ! command -v "$cmd" >/dev/null 2>&1; then
-    notify-send "Error: $cmd is not installed or not in path"
-    exit 1
-  fi
-done
+# Small delay to avoid focus race when launched from menus (tweak if needed)
+WAIT_BEFORE_SLURP="${WAIT_BEFORE_SLURP:-0.35}"
 
-output_dir="${HOME}/Pictures/Screenshots"
-mkdir -p "$output_dir"
-timestamp="$(date '+%y%m%d-%H%M-%S')"
-output="${output_dir}/screenshot-${timestamp}.png"
-clip_cmd="wl-copy --type image/png"
-choice=$(printf "selected area\nfull screen\nselected area (copy)\nfull screen (copy)" | wmenu -l 4 -p "Screenshot which area?")
+outdir="$HOME/Pictures/Screenshots"
+mkdir -p "$outdir" || exit 1
+stamp="$(date '+%y%m%d-%H%M-%S')"
+out="$outdir/screenshot-$stamp.png"
 
-case "$choice" in
-"selected area")
-  grim -g "$(slurp)" "$output"
-  ln -sf "$output" "$output_dir/last.png"
-  notify-send -a screenshot "Screenshot saved" "Left click to copy path/Right Click to open"
+mode="${1:-}"
+
+# If no mode given, ask via wmenu
+if [ -z "$mode" ]; then
+  sel=$(printf "selected area\nfull screen\nselected area (copy)\nfull screen (copy)" | wmenu -i -l 4 -p "Screenshot which area?") || exit 0
+  case "$sel" in
+  "selected area") mode="area" ;;
+  "full screen") mode="full" ;;
+  "selected area (copy)") mode="area-copy" ;;
+  "full screen (copy)") mode="full-copy" ;;
+  *) exit 0 ;;
+  esac
+fi
+
+case "$mode" in
+area)
+  sleep "$WAIT_BEFORE_SLURP"
+  geo="$(slurp)" || exit 1
+  [ -n "$geo" ] || exit 1
+  grim -g "$geo" "$out" || exit 1
+  ln -sf "$out" "$outdir/last.png"
+  notify-send -a screenshot "Screenshot saved" "Left click to copy path/Right Click to open" || true
   ;;
-"full screen")
-  grim "$output"
-  ln -sf "$output" "$output_dir/last.png"
-  notify-send -a screenshot "Screenshot saved" "Left click to copy path/Right Click to open"
+full)
+  grim "$out" || exit 1
+  ln -sf "$out" "$outdir/last.png"
+  notify-send -a screenshot "Screenshot saved" "Left click to copy path/Right Click to open" || true
   ;;
-"selected area (copy)")
-  grim -g "$(slurp)" - | ${clip_cmd}
-  notify-send -a screenshot "Screenshot copied to clipboard"
+area-copy | copy-area)
+  sleep "$WAIT_BEFORE_SLURP"
+  geo="$(slurp)" || exit 1
+  [ -n "$geo" ] || exit 1
+  grim -g "$geo" - | wl-copy --type image/png
+  notify-send -a screenshot "Screenshot copied to clipboard" || true
   ;;
-"full screen (copy)")
-  grim - | ${clip_cmd}
-  notify-send -a screenshot "Screenshot copied to clipboard"
+full-copy | copy-full)
+  grim - | wl-copy --type image/png
+  notify-send -a screenshot "Screenshot copied to clipboard" || true
+  ;;
+*)
+  printf 'usage: %s {area|full|area-copy|full-copy}\n' "$0" >&2
+  exit 2
   ;;
 esac

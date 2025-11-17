@@ -34,6 +34,7 @@ x-scheme-handler/eclipse+mpc=_usr_lib_papyrus_.desktop
 application/msword=onlyoffice-desktopeditors.desktop
 x-scheme-handler/jetbrains=jetbrains-toolbox.desktop
 application/x-wayland-gnome-saved-search=thunar.desktop
+text/plain=nvim.desktop
 
 [Added Associations]
 image/bmp=sxiv.desktop;
@@ -59,3 +60,4 @@ video/mp4=org.shotcut.Shotcut.desktop;org.avidemux.Avidemux.desktop;
 x-scheme-handler/http=firefox.desktop;
 x-scheme-handler/https=firefox.desktop;
 x-scheme-handler/chrome=firefox.desktop;
+text/plain=nvim.desktop;

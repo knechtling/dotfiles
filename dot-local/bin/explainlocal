@@ -1,0 +1,866 @@
+#!/usr/bin/env python3
+import os
+import re
+import shlex
+import subprocess
+import sys
+import tempfile
+from dataclasses import dataclass
+from select import select
+from typing import Any, Dict, List, Optional, Tuple
+
+
+class Colors:
+    enabled = sys.stdout.isatty()
+    reset = "\033[0m" if enabled else ""
+    bold = "\033[1m" if enabled else ""
+    cyan = "\033[36m" if enabled else ""
+    yellow = "\033[33m" if enabled else ""
+    green = "\033[32m" if enabled else ""
+    dim = "\033[2m" if enabled else ""
+
+
+@dataclass
+class CommandSegment:
+    raw: str
+    command: str
+    description: Optional[str]
+    options: List[Tuple[str, Optional[str], Optional[str]]]
+    arguments: List[str]
+
+
+@dataclass
+class TaskInfo:
+    name: Optional[str]
+    module: Optional[str]
+    params: Dict[str, Any]
+    meta: Dict[str, Any]
+
+
+ANSIBLE_DOC_CACHE: Dict[str, Optional[Dict[str, Any]]] = {}
+
+
+def run_subprocess(args: List[str], *, timeout: float = 4.0, env: Optional[Dict[str, str]] = None) -> subprocess.CompletedProcess:
+    merged_env = os.environ.copy()
+    if env:
+        merged_env.update(env)
+    try:
+        return subprocess.run(
+            args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=timeout,
+            env=merged_env,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return subprocess.CompletedProcess(args, returncode=1, stdout="", stderr="")
+
+
+def shorten(text: Optional[str], limit: int = 220) -> Optional[str]:
+    if not text:
+        return text
+    collapsed = re.sub(r"\s+", " ", text).strip()
+    if len(collapsed) <= limit:
+        return collapsed
+    sentence_break = collapsed.find(". ")
+    if 0 < sentence_break + 1 <= limit:
+        return collapsed[: sentence_break + 1]
+    return (collapsed[: limit - 3]).rstrip(" ,;:") + "..."
+
+
+def read_entry() -> Optional[str]:
+    buffer: List[str] = []
+    prompt_main = "explainlocal> "
+    prompt_more = "... "
+    prompt = prompt_main
+
+    while True:
+        try:
+            sys.stdout.write(prompt)
+            sys.stdout.flush()
+            line = sys.stdin.readline()
+        except KeyboardInterrupt:
+            sys.stdout.write("\n")
+            return None
+
+        if line == "":
+            return None
+
+        line = line.rstrip("\n")
+        if not buffer and line.strip().lower() in {"exit", "quit"}:
+            return None
+
+        buffer.append(line)
+        extra_data = False
+
+        while True:
+            ready, _, _ = select([sys.stdin], [], [], 0)
+            if not ready:
+                break
+            chunk = sys.stdin.readline()
+            if not chunk:
+                break
+            chunk = chunk.rstrip("\n")
+            buffer.append(chunk)
+            extra_data = True
+
+        if extra_data:
+            break
+
+        if len(buffer) == 1:
+            break
+
+        if buffer[-1].strip() == "":
+            buffer.pop()
+            break
+
+        prompt = prompt_more
+
+    return "\n".join(buffer).strip()
+
+
+def detect_input_type(text: str) -> str:
+    yaml_indicators = [
+        re.compile(r"^\s*-\s*name\s*:", re.IGNORECASE),
+        re.compile(r"^\s*-\s*[a-zA-Z0-9_]+\s*:", re.IGNORECASE),
+        re.compile(r"^\s*hosts\s*:", re.IGNORECASE),
+        re.compile(r"ansible\.builtin"),
+    ]
+    lines = [ln for ln in text.splitlines() if ln.strip() and not ln.strip().startswith("#")]
+    if not lines:
+        return "shell"
+    for pattern in yaml_indicators:
+        if any(pattern.search(line) for line in lines[:4]):
+            return "ansible"
+    yaml_like_pattern = re.compile(r"^\s*[\w\"'][\w\s\"'\.-]*:\s*(\S|$)")
+    yaml_like = sum(1 for ln in lines if yaml_like_pattern.search(ln))
+    threshold = max(1, len(lines) // 2)
+    if yaml_like >= threshold and yaml_like > 0:
+        return "ansible"
+    return "shell"
+
+
+def parse_command_segments(text: str) -> Tuple[List[CommandSegment], List[str]]:
+    lexer = shlex.shlex(text, posix=True, punctuation_chars="|&;")
+    lexer.whitespace_split = True
+    lexer.commenters = ""
+    tokens = list(lexer)
+
+    segments: List[List[str]] = []
+    connectors: List[str] = []
+    current: List[str] = []
+
+    for token in tokens:
+        if token in {"|", "||", "&&", ";"}:
+            if current:
+                segments.append(current)
+            else:
+                segments.append([])
+            connectors.append(token)
+            current = []
+        else:
+            current.append(token)
+    if current or not segments:
+        segments.append(current)
+
+    result_segments: List[CommandSegment] = []
+    for seg_tokens in segments:
+        if not seg_tokens:
+            continue
+        cmd_name = seg_tokens[0]
+        options, arguments = split_options(seg_tokens[1:])
+        description = get_command_description(cmd_name)
+        option_details = enrich_option_descriptions(cmd_name, options)
+        segment_text = " ".join(format_argument(token) if token else repr(token) for token in seg_tokens)
+        result_segments.append(
+            CommandSegment(
+                raw=segment_text,
+                command=cmd_name,
+                description=description,
+                options=option_details,
+                arguments=arguments,
+            )
+        )
+
+    return result_segments, connectors[: len(result_segments) - 1]
+
+
+def split_options(tokens: List[str]) -> Tuple[List[Tuple[str, Optional[str]]], List[str]]:
+    options: List[Tuple[str, Optional[str]]] = []
+    arguments: List[str] = []
+    i = 0
+    while i < len(tokens):
+        token = tokens[i]
+        if token == "--":
+            arguments.extend(tokens[i + 1 :])
+            break
+        if token.startswith("--"):
+            if "=" in token:
+                opt, value = token.split("=", 1)
+                options.append((opt, value))
+            elif i + 1 < len(tokens) and not tokens[i + 1].startswith("-"):
+                options.append((token, tokens[i + 1]))
+                i += 1
+            else:
+                options.append((token, None))
+        elif token.startswith("-") and token != "-":
+            if len(token) > 2:
+                remainder = token[2:]
+                if remainder and remainder.isalpha() and remainder.islower():
+                    for short_opt in token[1:]:
+                        options.append((f"-{short_opt}", None))
+                elif remainder:
+                    options.append((token[:2], remainder))
+                else:
+                    options.append((token[:2], None))
+            else:
+                options.append((token, None))
+        else:
+            arguments.append(token)
+        i += 1
+    return options, arguments
+
+
+def get_command_description(cmd: str) -> Optional[str]:
+    result = run_subprocess(["man", "-f", cmd])
+    output = (result.stdout or result.stderr).strip()
+    if output and " nothing appropriate." not in output:
+        for line in output.splitlines():
+            normalized = line.lower()
+            if normalized.startswith(f"{cmd.lower()} ") or normalized.startswith(f"{cmd.lower()}("):
+                parts = line.split(" - ", 1)
+                if len(parts) == 2:
+                    return parts[1].strip()
+                return line.strip()
+    man_page = run_subprocess(["man", "-P", "cat", cmd])
+    text = (man_page.stdout or "").split("\n")
+    name_section = False
+    for line in text:
+        if line.strip() == "NAME":
+            name_section = True
+            continue
+        if name_section:
+            if line.strip():
+                parts = line.strip().split(" - ", 1)
+                if len(parts) == 2:
+                    return parts[1].strip()
+                return line.strip()
+            else:
+                break
+    help_text = fetch_help_text(cmd)
+    if help_text:
+        first_line = help_text.strip().splitlines()[0]
+        return first_line.strip()
+    return None
+
+
+def fetch_help_text(cmd: str, extra_args: Optional[List[str]] = None) -> Optional[str]:
+    if "/" in cmd:
+        return None
+    env = {"LC_ALL": "C"}
+    for flag in ("--help", "-h"):
+        args = [cmd]
+        if extra_args:
+            args.extend(extra_args)
+        args.append(flag)
+        result = run_subprocess(args, env=env)
+        combined = (result.stdout + "\n" + result.stderr).strip()
+        if combined:
+            return combined
+    # shell builtin fallback
+    builtin_help = run_subprocess(["bash", "-lc", f"help {shlex.quote(cmd)}"])
+    combined = (builtin_help.stdout + "\n" + builtin_help.stderr).strip()
+    if combined:
+        return combined
+    return None
+
+
+def enrich_option_descriptions(cmd: str, options: List[Tuple[str, Optional[str]]]) -> List[Tuple[str, Optional[str], Optional[str]]]:
+    if not options:
+        return []
+    option_docs: Dict[str, str] = {}
+    help_text = fetch_help_text(cmd)
+    if help_text:
+        option_docs.update(parse_option_docs(help_text))
+    if not option_docs:
+        man_text = run_subprocess(["man", "-P", "cat", cmd]).stdout
+        option_docs.update(parse_man_option_docs(man_text))
+    missing_primary = [
+        opt
+        for opt, _ in options
+        if opt not in option_docs and len(opt) == 2 and opt.startswith("-") and opt[1].isupper()
+    ]
+    seen_primary = set()
+    for primary in missing_primary:
+        if primary in seen_primary:
+            continue
+        extra_help = fetch_help_text(cmd, [primary])
+        if extra_help:
+            option_docs.update(parse_option_docs(extra_help))
+        seen_primary.add(primary)
+    if cmd == "pacman":
+        for pac_opt, description in PACMAN_OPERATION_DOCS.items():
+            option_docs.setdefault(pac_opt, description)
+    detailed: List[Tuple[str, Optional[str], Optional[str]]] = []
+    for opt, value in options:
+        description = option_docs.get(opt)
+        if description is None and len(opt) == 2 and opt.startswith("-"):
+            long_match = next((desc for key, desc in option_docs.items() if key.startswith("--") and opt in key.split(", ")), None)
+            if long_match:
+                description = long_match
+        detailed.append((opt, value, description))
+    return detailed
+
+
+def parse_option_docs(help_text: Optional[str]) -> Dict[str, str]:
+    if not help_text:
+        return {}
+    lines = help_text.splitlines()
+    docs: Dict[str, str] = {}
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.lstrip()
+        indent = len(line) - len(stripped)
+        if stripped.startswith("-"):
+            option_part, _, remainder = stripped.partition("  ")
+            if not remainder:
+                option_part, _, remainder = stripped.partition(" ")
+            desc_parts = [remainder.strip()] if remainder.strip() else []
+            j = i + 1
+            while j < len(lines):
+                next_line = lines[j]
+                if not next_line.strip():
+                    break
+                next_indent = len(next_line) - len(next_line.lstrip())
+                next_stripped = next_line.lstrip()
+                if next_stripped.startswith("-") and next_indent <= indent + 2:
+                    break
+                if next_indent > indent:
+                    if next_stripped.startswith("-"):
+                        break
+                    desc_parts.append(next_line.strip())
+                    j += 1
+                else:
+                    break
+            options = [opt.strip() for opt in re.split(r",\s*", option_part) if opt.strip()]
+            description = " ".join(desc_parts).strip() if desc_parts else None
+            if description:
+                for opt in options:
+                    docs.setdefault(opt, description)
+            i = j
+        else:
+            i += 1
+    return docs
+
+
+def parse_man_option_docs(man_text: Optional[str]) -> Dict[str, str]:
+    if not man_text:
+        return {}
+    docs: Dict[str, str] = {}
+    lines = man_text.splitlines()
+    in_options = False
+    current_option: Optional[str] = None
+    current_desc: List[str] = []
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped.isupper() and len(stripped.split()) <= 3:
+            if in_options and current_option and current_desc:
+                docs[current_option] = " ".join(current_desc).strip()
+            in_options = stripped == "OPTIONS"
+            current_option = None
+            current_desc = []
+            continue
+        if not in_options:
+            continue
+        if re.match(r"^(-\w|--[\w-])", stripped):
+            if current_option and current_desc:
+                docs[current_option] = " ".join(current_desc).strip()
+            current_option = stripped.split()[0]
+            current_desc = []
+        elif current_option and stripped:
+            current_desc.append(stripped)
+    if in_options and current_option and current_desc:
+        docs[current_option] = " ".join(current_desc).strip()
+    return docs
+
+
+def build_overall_summary(segments: List[CommandSegment], connectors: List[str]) -> str:
+    if not segments:
+        return ""
+    parts = []
+    for seg in segments:
+        base = seg.command
+        if seg.description:
+            base += f" ({seg.description})"
+        if seg.arguments:
+            formatted_args = [format_argument(arg) for arg in seg.arguments]
+            base += " targeting " + ", ".join(formatted_args)
+        used_opts = []
+        for opt, val, desc in seg.options:
+            display = format_option_display(opt, val)
+            if desc:
+                display += f" ({shorten(desc, 120)})"
+            used_opts.append(display)
+        if used_opts:
+            base += " with " + "; ".join(used_opts)
+        parts.append(base)
+    if len(parts) == 1:
+        return parts[0]
+    summary = parts[0]
+    mapping = {"|": " then pipes into ", "||": " otherwise runs ", "&&": " on success runs ", ";": " then runs "}
+    for connector, piece in zip(connectors, parts[1:]):
+        summary += mapping.get(connector, " then ") + piece
+    return summary
+
+
+def format_option_display(option: str, value: Optional[str]) -> str:
+    return f"{option} {value}" if value else option
+
+
+def format_argument(arg: str) -> str:
+    if not arg:
+        return repr(arg)
+    if any(ord(ch) < 32 or ch in {" ", "\t", "\n", "\r"} for ch in arg):
+        return repr(arg)
+    return arg
+
+
+def render_command_explanation(text: str) -> None:
+    segments, connectors = parse_command_segments(text)
+    if not segments:
+        print("No command detected.")
+        return
+    print(f"{Colors.cyan}{Colors.bold}Type{Colors.reset}: Shell command")
+    print(f"{Colors.cyan}{Colors.bold}Overall{Colors.reset}: {build_overall_summary(segments, connectors)}")
+    for idx, seg in enumerate(segments, start=1):
+        header = f"Stage {idx}" if len(segments) > 1 else "Command"
+        connector_note = ""
+        if idx > 1:
+            connector = connectors[idx - 2]
+            connector_words = {"|": "Pipe", "||": "OR", "&&": "AND", ";": "Sequence"}
+            connector_note = f" ({connector_words.get(connector, connector)})"
+        print(f"\n{Colors.bold}{header}{connector_note}{Colors.reset}: {seg.raw}")
+        if seg.description:
+            print(f"  {Colors.green}Name{Colors.reset}: {seg.command} — {seg.description}")
+        else:
+            print(f"  {Colors.green}Name{Colors.reset}: {seg.command}")
+        if seg.options:
+            print(f"  {Colors.green}Options{Colors.reset}:")
+            for opt, value, desc in seg.options:
+                display = format_option_display(opt, value)
+                if desc:
+                    print(f"    - {display}: {shorten(desc)}")
+                else:
+                    print(f"    - {display}")
+        if seg.arguments:
+            formatted_args = ", ".join(format_argument(arg) for arg in seg.arguments)
+            print(f"  {Colors.green}Arguments{Colors.reset}: {formatted_args}")
+
+
+META_TASK_KEYS = {
+    "become",
+    "become_user",
+    "become_method",
+    "become_exe",
+    "delegate_to",
+    "ignore_errors",
+    "any_errors_fatal",
+    "changed_when",
+    "failed_when",
+    "register",
+    "when",
+    "tags",
+    "loop",
+    "loop_control",
+    "with_items",
+    "with_list",
+    "with_dict",
+    "with_together",
+    "until",
+    "retries",
+    "delay",
+    "run_once",
+    "vars",
+    "environment",
+    "notify",
+    "listen",
+    "throttle",
+    "async",
+    "poll",
+    "check_mode",
+    "become_flags",
+    "block",
+    "rescue",
+    "always",
+}
+
+SHELL_LIKE_MODULES = {
+    "command",
+    "ansible.builtin.command",
+    "shell",
+    "ansible.builtin.shell",
+    "ansible.builtin.raw",
+    "raw",
+    "ansible.builtin.script",
+    "script",
+}
+
+PACMAN_OPERATION_DOCS = {
+    "-D": "operate on the package database",
+    "--database": "operate on the package database",
+    "-F": "query the file database",
+    "--files": "query the file database",
+    "-Q": "query the local package database",
+    "--query": "query the local package database",
+    "-R": "remove packages",
+    "--remove": "remove packages",
+    "-S": "operate on the sync repositories",
+    "--sync": "operate on the sync repositories",
+    "-T": "check dependencies",
+    "--deptest": "check dependencies",
+    "-U": "upgrade or add packages",
+    "--upgrade": "upgrade or add packages",
+    "-V": "display version information",
+    "--version": "display version information",
+    "-h": "show help",
+    "--help": "show help",
+}
+
+def parse_ansible_task(text: str) -> List[TaskInfo]:
+    yaml_tasks = parse_ansible_yaml_tasks(text)
+    if yaml_tasks:
+        return yaml_tasks
+    return parse_ansible_fallback(text)
+
+
+def parse_ansible_yaml_tasks(text: str) -> List[TaskInfo]:
+    try:
+        import yaml  # type: ignore
+    except ImportError:
+        return []
+    try:
+        documents = [doc for doc in yaml.safe_load_all(text) if doc is not None]
+    except yaml.YAMLError:
+        return []
+    raw_tasks: List[Any] = []
+    for doc in documents:
+        if isinstance(doc, dict) and "tasks" in doc:
+            tasks_section = doc.get("tasks") or []
+            if isinstance(tasks_section, list):
+                raw_tasks.extend(tasks_section)
+        elif isinstance(doc, list):
+            raw_tasks.extend(doc)
+        elif isinstance(doc, dict):
+            raw_tasks.append(doc)
+    tasks: List[TaskInfo] = []
+    for raw in raw_tasks:
+        task = build_task_from_mapping(raw)
+        if task:
+            tasks.append(task)
+    return tasks
+
+
+def parse_ansible_fallback(text: str) -> List[TaskInfo]:
+    tasks: List[TaskInfo] = []
+    current: Optional[TaskInfo] = None
+    module_indent: Optional[int] = None
+
+    for line in text.splitlines():
+        raw_line = line.rstrip()
+        stripped = raw_line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        indent = len(raw_line) - len(stripped)
+
+        if stripped.startswith("- "):
+            if current and current.module:
+                tasks.append(current)
+            current = TaskInfo(name=None, module=None, params={}, meta={})
+            module_indent = None
+            after_dash = stripped[2:]
+            if after_dash.startswith("name:"):
+                current.name = after_dash.split(":", 1)[1].strip()
+            elif ":" in after_dash:
+                key, value = after_dash.split(":", 1)
+                key = key.strip()
+                value = value.strip()
+                if key not in {"hosts", "tasks", "vars", "name"}:
+                    current.module = key
+                    module_indent = indent + 2
+                    if value:
+                        current.params[key] = value
+            continue
+
+        if current is None:
+            continue
+
+        if current.module is None and stripped.endswith(":"):
+            module_candidate = stripped[:-1].strip()
+            if re.match(r"^[a-zA-Z0-9_.]+$", module_candidate):
+                current.module = module_candidate
+                module_indent = indent
+                continue
+
+        if current.module and module_indent is not None and indent > module_indent:
+            if ":" in stripped:
+                key, value = stripped.split(":", 1)
+                current.params[key.strip()] = value.strip()
+            continue
+
+    if current and current.module:
+        tasks.append(current)
+    return tasks
+
+
+def build_task_from_mapping(data: Any) -> Optional[TaskInfo]:
+    if not isinstance(data, dict):
+        return None
+    name = data.get("name")
+    module: Optional[str] = None
+    module_value: Any = None
+    extra_params: Dict[str, Any] = {}
+    args_block: Optional[Dict[str, Any]] = None
+    meta: Dict[str, Any] = {}
+
+    for key, value in data.items():
+        if key == "name":
+            continue
+        if key in META_TASK_KEYS:
+            meta[key] = value
+            continue
+        if key == "args" and isinstance(value, dict):
+            args_block = value
+            continue
+        if module is None:
+            module = str(key)
+            module_value = value
+        else:
+            extra_params[key] = value
+
+    if module is None:
+        return TaskInfo(name=name, module=None, params={}, meta=normalize_meta(meta))
+
+    params: Dict[str, Any] = {}
+    params.update(normalize_params(module, module_value))
+    params.update({k: normalize_param_value(v) for k, v in extra_params.items()})
+    if args_block:
+        for k, v in args_block.items():
+            params.setdefault(k, normalize_param_value(v))
+    return TaskInfo(name=name, module=module, params=params, meta=normalize_meta(meta))
+
+
+def normalize_params(module: str, value: Any) -> Dict[str, Any]:
+    if value is None:
+        return {}
+    if isinstance(value, dict):
+        return {k: normalize_param_value(v) for k, v in value.items()}
+    param_key = "cmd" if module in SHELL_LIKE_MODULES else "value"
+    return {param_key: normalize_param_value(value)}
+
+
+def normalize_param_value(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {k: normalize_param_value(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [normalize_param_value(v) for v in value]
+    return value
+
+
+def normalize_meta(meta: Dict[str, Any]) -> Dict[str, Any]:
+    return {k: normalize_param_value(v) for k, v in meta.items()}
+
+
+def fetch_ansible_doc(module: str) -> Optional[Dict[str, Any]]:
+    if module in ANSIBLE_DOC_CACHE:
+        return ANSIBLE_DOC_CACHE[module]
+    env = {
+        "ANSIBLE_LOCAL_TEMP": tempfile.gettempdir(),
+        "ANSIBLE_LOCAL_TMP": tempfile.gettempdir(),
+        "ANSIBLE_NOCOWS": "1",
+        "PAGER": "cat",
+    }
+    result = run_subprocess(["ansible-doc", "-j", module], env=env, timeout=8.0)
+    if result.returncode != 0 or not result.stdout.strip():
+        return None
+    try:
+        import json  # type: ignore
+    except ImportError:
+        ANSIBLE_DOC_CACHE[module] = None
+        return None
+    try:
+        data = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        ANSIBLE_DOC_CACHE[module] = None
+        return None
+    doc = data.get(module)
+    ANSIBLE_DOC_CACHE[module] = doc
+    return doc
+
+
+def render_ansible_explanation(text: str) -> None:
+    tasks = parse_ansible_task(text)
+    if not tasks:
+        print("No Ansible task detected.")
+        return
+
+    docs: Dict[str, Optional[Dict[str, Any]]] = {}
+    for task in tasks:
+        if task.module and task.module not in docs:
+            docs[task.module] = fetch_ansible_doc(task.module)
+
+    print(f"{Colors.cyan}{Colors.bold}Type{Colors.reset}: Ansible task")
+    overall = build_ansible_overall(tasks, docs)
+    if overall:
+        print(f"{Colors.cyan}{Colors.bold}Overall{Colors.reset}: {overall}")
+
+    for idx, task in enumerate(tasks, start=1):
+        doc = docs.get(task.module) if task.module else None
+        short_description = (
+            (doc or {}).get("doc", {}).get("short_description")
+            if doc
+            else None
+        )
+        print("")
+        print(f"{Colors.bold}Task {idx}{Colors.reset}:")
+        if task.name:
+            print(f"  {Colors.green}Name{Colors.reset}: {task.name}")
+        if task.module:
+            desc = short_description or "Module documentation unavailable"
+            print(f"  {Colors.green}Module{Colors.reset}: {task.module} — {desc}")
+        if task.params:
+            print(f"  {Colors.green}Arguments{Colors.reset}:")
+            option_docs = ((doc or {}).get("doc", {}).get("options") or {}) if doc else {}
+            for key, value in task.params.items():
+                detail = extract_ansible_param_doc(option_docs, key)
+                display_key = (
+                    "command" if key == "cmd" and task.module in SHELL_LIKE_MODULES else key
+                )
+                render_key_value(display_key, value, detail, indent=4)
+        if task.meta:
+            print(f"  {Colors.green}Settings{Colors.reset}:")
+            for key, value in task.meta.items():
+                render_key_value(key, value, None, indent=4)
+
+
+def build_ansible_overall(tasks: List[TaskInfo], docs: Dict[str, Optional[Dict[str, Any]]]) -> Optional[str]:
+    summaries: List[str] = []
+    for task in tasks:
+        doc = docs.get(task.module) if task.module else None
+        description = (doc or {}).get("doc", {}).get("short_description") if doc else None
+        summary = build_task_summary(task, description)
+        if summary:
+            summaries.append(summary)
+    if not summaries:
+        return None
+    max_items = 3
+    combined = " | ".join(summaries[:max_items])
+    if len(summaries) > max_items:
+        combined += f" | … (+{len(summaries) - max_items} more)"
+    return combined
+
+
+def build_task_summary(task: TaskInfo, description: Optional[str]) -> Optional[str]:
+    pieces: List[str] = []
+    if task.name:
+        pieces.append(task.name)
+    if task.module:
+        module_part = task.module
+        if description:
+            module_part += f" ({shorten(description, 90)})"
+        pieces.append(module_part)
+    if task.params:
+        key_args: List[str] = []
+        for key, value in task.params.items():
+            rendered = shorten(format_value(value), 80)
+            display_key = (
+                "command" if key == "cmd" and task.module in SHELL_LIKE_MODULES else key
+            )
+            key_args.append(f"{display_key}={rendered}")
+            if len(key_args) == 2:
+                break
+        if key_args:
+            pieces.append("with " + ", ".join(key_args))
+    if not pieces:
+        return None
+    return "; ".join(pieces)
+
+
+def format_value(value: Any) -> str:
+    if isinstance(value, str):
+        return value.strip("\n")
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if value is None:
+        return "null"
+    if isinstance(value, (int, float)):
+        return str(value)
+    if isinstance(value, dict):
+        return ", ".join(f"{k}={format_value(v)}" for k, v in value.items())
+    if isinstance(value, (list, tuple)):
+        return ", ".join(format_value(v) for v in value)
+    return str(value)
+
+
+def render_key_value(key: str, value: Any, detail: Optional[str], indent: int = 0) -> None:
+    indent_str = " " * indent
+    rendered = format_value(value)
+    if "\n" in rendered:
+        print(f"{indent_str}- {key}:")
+        for line in rendered.splitlines():
+            print(f"{indent_str}    {line}")
+        if detail:
+            print(f"{indent_str}    ({shorten(detail)})")
+    else:
+        if detail:
+            print(f"{indent_str}- {key}: {rendered} ({shorten(detail)})")
+        else:
+            print(f"{indent_str}- {key}: {rendered}")
+
+
+def extract_ansible_param_doc(option_docs: Dict[str, Dict], key: str) -> Optional[str]:
+    if key in option_docs:
+        description = option_docs[key].get("description")
+        if isinstance(description, list):
+            return " ".join(d.strip() for d in description if d.strip())
+        if isinstance(description, str):
+            return description.strip()
+    for option, payload in option_docs.items():
+        aliases = payload.get("aliases") or []
+        if key in aliases:
+            description = payload.get("description")
+            if isinstance(description, list):
+                return " ".join(d.strip() for d in description if d.strip())
+            if isinstance(description, str):
+                return description.strip()
+    return None
+
+
+def main() -> None:
+    intro = (
+        f"{Colors.bold}Explainlocal ready.{Colors.reset} "
+        "Paste commands or Ansible tasks. "
+        "Single-line entries run immediately; finish manual multi-line input with a blank line."
+    )
+    print(intro)
+    while True:
+        entry = read_entry()
+        if entry is None or not entry.strip():
+            print("")
+            break
+        print("")
+        entry_type = detect_input_type(entry)
+        if entry_type == "ansible":
+            render_ansible_explanation(entry)
+        else:
+            render_command_explanation(entry)
+        print("")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.stdout.write("\n")

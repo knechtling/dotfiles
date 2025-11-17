@@ -51,7 +51,12 @@ export GRADLE_USER_HOME="$XDG_DATA_HOME"/gradle
 export KODI_DATA="$XDG_DATA_HOME"/kodi
 export LESSHISTFILE="$XDG_CACHE_HOME"/less/history
 export MANPAGER="nvim +Man!"
-
+export SANE_DEFAULT_DEVICE="airscan:e0:Canon TR4700 series"
+#
+# Enable screen sharing for dwl
+export XDG_CURRENT_DESKTOP=wlroots
+export XDG_SESSION_TYPE=wayland
+export XDG_SESSION_DESKTOP=wlroots
 
 
 # Other program settings:

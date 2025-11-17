@@ -31,7 +31,10 @@ alias \
 	yt="yt-dlp --embed-metadata -i" \
 	yta="yt -x -f bestaudio/best" \
 	ytt="yt --skip-download --write-thumbnail" \
-	ffmpeg="ffmpeg -hide_banner"
+	ffmpeg="ffmpeg -hide_banner" \
+  l="ls -lahs" \
+  pacs="SKIP_AUTOSNAP=1 pacman -S" \
+  yays="SKIP_AUTOSNAP=1 yay -S"
 
 # Colorize commands when possible.
 alias \
@@ -61,7 +64,7 @@ alias \
 	magit="nvim -c MagitOnly" \
 	ref="shortcuts >/dev/null; source ${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutrc ; source ${XDG_CONFIG_HOME:-$HOME/.config}/shell/zshnameddirrc" \
 	weath="less -S ${XDG_CACHE_HOME:-$HOME/.cache}/weatherreport" \
-  alias ytfzf="ytfzf -t" \
-  alias stow="stow --dotfiles" \
-  alias history="history -E" \
-  alias ansi="\e["
+  ytfzf="ytfzf -t" \
+  stow="stow --dotfiles" \
+  history="history -E" \
+  ansi="\e["

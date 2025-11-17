@@ -32,7 +32,6 @@ setopt hist_reduce_blanks
 # Load aliases and shortcuts if existent.
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutrc"
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/profile" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/profile"
-[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/aliasrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/aliasrc"
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/zshnameddirrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/zshnameddirrc"
 
 # Basic auto/tab complete:
@@ -175,20 +174,28 @@ setopt AUTO_PUSHD PUSHD_SILENT PUSHD_TO_HOME
 setopt PUSHD_IGNORE_DUPS
 setopt PUSHD_MINUS
 
+# Add cheat.sh completion
+fpath=(~/.config/zsh/ $fpath)
+
 ## Load plugins; should be last.
 
 # Fast Syntax Highlighting
 F_SH_PLUGIN="/usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
-[ -s "$F_SH_PLUGIN" ] && source "$F_SH_PLUGIN" || echo "Error: Unable to source fast-syntax-highlighting.plugin.zsh, file not found!"
+[ -s "$F_SH_PLUGIN" ] && source "$F_SH_PLUGIN" || echo "Error: Unable to source $F_SH_PLUGIN, file not found!"
 
 # Zsh Autosuggestions
 ZSH_AUTOSUGGESTIONS_PLUGIN="/usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
-[ -s "$ZSH_AUTOSUGGESTIONS_PLUGIN" ] && source "$ZSH_AUTOSUGGESTIONS_PLUGIN" || echo "Error: Unable to source zsh-autosuggestions.zsh, file not found!"
+[ -s "$ZSH_AUTOSUGGESTIONS_PLUGIN" ] && source "$ZSH_AUTOSUGGESTIONS_PLUGIN" || echo "Error: Unable to source $ZSH_AUTOSUGGESTIONS_PLUGIN, file not found!"
 
 # Zsh History Substring Search
 ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN="/usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh"
-[ -s "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" ] && source "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" || echo "Error: Unable to source zsh-history-substring-search.zsh, file not found!"
+[ -s "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" ] && source "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" || echo "Error: Unable to source $ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN, file not found!"
 
 # Autojump
 AUTOJUMP_PLUGIN="/usr/share/autojump/autojump.zsh"
 [[ -s "$AUTOJUMP_PLUGIN" ]] && source "$AUTOJUMP_PLUGIN" || echo "Error: Unable to source autojump.zsh, file not found!"
+
+FZF_HISTORY_PLUGIN="$HOME/.local/share/zsh/plugins/zsh-fzf-history-search/zsh-fzf-history-search.plugin.zsh"
+[[ -s "$FZF_HISTORY_PLUGIN" ]] && source "$FZF_HISTORY_PLUGIN" || echo "Error: Unable to source $FZF_HISTORY_PLUGIN, file not found!"
+# Load aliases
+[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/aliasrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/aliasrc"

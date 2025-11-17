@@ -22,25 +22,36 @@ menu:
     submenu:
       "BackSpace": { desc: System Actions, cmd: "sysact" }
       "F3": { desc: Display Select, cmd: "displayselect" }
-      "F4": { desc: Audio Mixer, cmd: "$TERMINAL -e pulsemixer" }
+      "F4": { desc: Audio Mixer, cmd: "foot -T floating -e pulsemixer" }
       "F7": { desc: Unicode Picker, cmd: "dmenuunicode" }
       "F8": { desc: Screenshot, cmd: "maimpick-wl" }
       "m": { desc: Mounter, cmd: "mounter" }
       "u": { desc: Unmounter, cmd: "unmounter" }
       "d": { desc: Display Configuration, cmd: "wdisplays" }
-      "s": { desc: System Monitor, cmd: "$TERMINAL -e btop" }
+      "s": { desc: System Monitor, cmd: "foot -T floating -e btop" }
 
   "m":
     desc: Media
     submenu:
-      "minus": { desc: Volume -5%, cmd: "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-" }
-      "plus": { desc: Volume +5%, cmd: "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+" }
-      "m": { desc: Toggle Mute, cmd: "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle" }
+      "minus":
+        { desc: Volume -5%, cmd: "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-" }
+      "plus":
+        { desc: Volume +5%, cmd: "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+" }
+      "m":
+        { desc: Toggle Mute, cmd: "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle" }
       "n": { desc: Next Track, cmd: "mpc next" }
       "p": { desc: Previous Track, cmd: "mpc prev" }
       "Return": { desc: Play, cmd: "mpc play" }
       "space": { desc: Pause, cmd: "mpc pause" }
       "s": { desc: Stop, cmd: "mpc stop" }
+
+  "l":
+    desc: Learn
+    submenu:
+      "e": { desc: Explain Shell Commands, cmd: "foot -T floating -e explain"}
+      "c": { desc: Search Cheatsheets, cmd: "foot -T floating -e chtfzf"}
+      "m": { desc: Search Manpages, cmd: "foot -T floating -e manfzf"}
+      "a": { desc: Search Ansible docs, cmd: "foot -T floating -e ansible-docfzf"}
 
   "b":
     desc: Control Center
@@ -53,16 +64,21 @@ menu:
     submenu:
       "p": { desc: Music Player, cmd: "$MUSICPLAYER" }
       "e": { desc: Email Client, cmd: "$EMAILCLIENT" }
-      "y": { desc: Terminal YouTube Browser, cmd: "$TERMINAL -e ytfzf -t" }
-      "n": { desc: Notes (VimWiki), cmd: "$TERMINAL -e nvim -c WikiIndex" }
-      "r": { desc: Terminal File Manager, cmd: "$TERMINAL -e lfub" }
+      "y":
+        { desc: Terminal YouTube Browser, cmd: "foot -T floating -e ytfzf -t" }
+      "n":
+        { desc: Notes (VimWiki), cmd: "foot -T floating -e nvim -c WikiIndex" }
+      "r": { desc: Terminal File Manager, cmd: "foot -T floating -e lfub" }
+      "y": { desc: Youtube Webapp, cmd: "gtk-launch youtube.desktop" }
+      "k": { desc: Komoot Webapp, cmd: "gtk-launch komoot.desktop" }
+      "w": { desc: Whatsapp Webapp, cmd: "gtk-launch whatsapp-web.desktop" }
 
-  "l":
-    desc: Layouts
-    submenu:
-      "t": { desc: Tiled Layout, cmd: "dwlmsg -s -l 0" }
-      "f": { desc: Floating Layout, cmd: "dwlmsg -s -l 1" }
-      "m": { desc: Monocle Layout, cmd: "dwlmsg -s -l 2" }
+  # "l":
+  #   desc: Layouts
+  #   submenu:
+  #     "t": { desc: Tiled Layout, cmd: "dwlmsg -s -l 0" }
+  #     "f": { desc: Floating Layout, cmd: "dwlmsg -s -l 1" }
+  #     "m": { desc: Monocle Layout, cmd: "dwlmsg -s -l 2" }
 
   "x":
     desc: Session
@@ -72,3 +88,17 @@ menu:
       "h": { desc: Hibernate (systemd), cmd: "systemctl hibernate" }
       "r": { desc: Reboot (systemd), cmd: "systemctl reboot" }
       "p": { desc: Poweroff (systemd), cmd: "systemctl poweroff" }
+
+  "s":
+    desc: Screenshot
+    submenu:
+      "1": { desc: Screenshot area, cmd: "maimpick-wl area" }
+      "2": { desc: Screenshot full, cmd: "maimpick-wl full" }
+      "3": { desc: Screenshot area copy, cmd: "maimpick-wl area-copy" }
+      "4": { desc: Screenshot full copy, cmd: "maimpick-wl full-copy" }
+
+  "p":
+    desc: Pacman
+    submenu:
+      "i": { desc: Install Packages, cmd: "foot -T floating -e pkg-install" }
+      "r": { desc: Remove Packages, cmd: "foot -T floating -e pkg-remove" }

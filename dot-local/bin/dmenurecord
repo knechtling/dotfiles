@@ -1,123 +1,136 @@
 #!/bin/sh
 
-# Usage:
-# `$0`: Ask for recording type via dmenu
-# `$0 screencast`: Record both audio and screen
-# `$0 video`: Record only screen
-# `$0 audio`: Record only audio
-# `$0 kill`: Kill existing recording
-#
-# If there is already a running instance, user will be prompted to end it.
+# dwl may close stdin for keybind commands; reopen so slurp/wmenu still work.
+if [ ! -e /proc/self/fd/0 ]; then
+  exec </dev/null
+fi
 
-getdim() { xrandr | sed -n "s/\s*\([0-9]\+x[0-9]\+\).*\*.*/\1/p" ;}
+WMENU="wmenu -i"
+recording_dir="${VIDEO_RECORDINGS:-$HOME/Videos/screencasts}"
+mkdir -p "$recording_dir"
+pidfile="/tmp/recordingpid"
+iconfile="/tmp/recordingicon"
+statusbar="${STATUSBAR:-dwmblocks}"
+fallback_notice_shown=0
 
-updateicon() { \
-	echo "$1" > /tmp/recordingicon
-	pkill -RTMIN+9 "${STATUSBAR:-dwmblocks}"
-	}
-
-killrecording() {
-	recpid="$(cat /tmp/recordingpid)"
-	kill -15 "$recpid"
-	rm -f /tmp/recordingpid
-	updateicon ""
-	pkill -RTMIN+9 "${STATUSBAR:-dwmblocks}"
-	}
-
-screencast() { \
-	ffmpeg -y \
-	-f x11grab \
-	-framerate 30 \
-	-s "$(getdim)" \
-	-i "$DISPLAY" \
-	-r 24 \
-	-use_wallclock_as_timestamps 1 \
-	-f alsa -thread_queue_size 1024 -i default \
- 	-c:v h264 \
-	-crf 0 -preset ultrafast -c:a aac \
-	"$HOME/screencast-$(date '+%y%m%d-%H%M-%S').mp4" &
-	echo $! > /tmp/recordingpid
-	updateicon "⏺️🎙️"
-       	}
-
-video() { ffmpeg \
-	-f x11grab \
-	-framerate 30 \
-	-s "$(getdim)" \
-	-i "$DISPLAY" \
- 	-c:v libx264 -qp 0 -r 30 \
-	"$HOME/video-$(date '+%y%m%d-%H%M-%S').mkv" &
-	echo $! > /tmp/recordingpid
-	updateicon "⏺️"
-	}
-
-webcamhidef() { ffmpeg \
-	-f v4l2 \
-	-i /dev/video0 \
-	-video_size 1920x1080 \
-	"$HOME/webcam-$(date '+%y%m%d-%H%M-%S').mkv" &
-	echo $! > /tmp/recordingpid
-	updateicon "🎥"
-	}
-
-webcam() { ffmpeg \
-	-f v4l2 \
-	-i /dev/video0 \
-	-video_size 640x480 \
-	"$HOME/webcam-$(date '+%y%m%d-%H%M-%S').mkv" &
-	echo $! > /tmp/recordingpid
-	updateicon "🎥"
-	}
-
-
-audio() { \
-	ffmpeg \
-	-f alsa -i default \
-	-c:a flac \
-	"$HOME/audio-$(date '+%y%m%d-%H%M-%S').flac" &
-	echo $! > /tmp/recordingpid
-	updateicon "🎙️"
-	}
-
-askrecording() { \
-	choice=$(printf "screencast\\nvideo\\nvideo selected\\naudio\\nwebcam\\nwebcam (hi-def)" | dmenu -i -p "Select recording style:")
-	case "$choice" in
-		screencast) screencast;;
-		audio) audio;;
-		video) video;;
-		*selected) videoselected;;
-		webcam) webcam;;
-		"webcam (hi-def)") webcamhidef;;
-	esac
-	}
-
-asktoend() { \
-	response=$(printf "No\\nYes" | dmenu -i -p "Recording still active. End recording?") &&
-	[ "$response" = "Yes" ] &&  killrecording
-	}
-
-videoselected()
-{
-	slop -f "%x %y %w %h" > /tmp/slop
-	read -r X Y W H < /tmp/slop
-	rm /tmp/slop
-
-	ffmpeg \
-	-f x11grab \
-	-framerate 30 \
-	-video_size "$W"x"$H" \
-	-i :0.0+"$X,$Y" \
-	-c:v libx264 -qp 0 -r 30 \
-	"$HOME/box-$(date '+%y%m%d-%H%M-%S').mkv" &
-	echo $! > /tmp/recordingpid
-	updateicon "⏺️"
+notify() {
+  msg=$1
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send "Screen recorder" "$msg"
+  else
+    printf 'dmenurecord: %s\n' "$msg" >&2
+  fi
 }
 
+updateicon() {
+  echo "$1" >"$iconfile"
+  pkill -RTMIN+9 "$statusbar" >/dev/null 2>&1
+}
+
+cleanup_record_state() {
+  [ ! -f "$pidfile" ] && return
+  recpid=$(cat "$pidfile")
+  if kill -0 "$recpid" >/dev/null 2>&1; then
+    return
+  fi
+  rm -f "$pidfile"
+  updateicon ""
+}
+
+killrecording() {
+  [ ! -f "$pidfile" ] && return
+  recpid=$(cat "$pidfile")
+  kill -TERM -- "-$recpid" >/dev/null 2>&1 || kill -TERM "$recpid" >/dev/null 2>&1
+  rm -f "$pidfile"
+  updateicon ""
+}
+
+start_recording() {
+  icon="$1"
+  shift
+  setsid "$@" >/dev/null 2>&1 &
+  recpid=$!
+  sleep 0.2
+  if ! kill -0 "$recpid" >/dev/null 2>&1; then
+    return 1
+  fi
+  echo "$recpid" >"$pidfile"
+  updateicon "$icon"
+  return 0
+}
+
+try_start_wf_recorder() {
+  icon="$1"
+  shift
+  if start_recording "$icon" wf-recorder -a "$@"; then
+    return 0
+  fi
+  if [ $fallback_notice_shown -eq 0 ]; then
+    notify "Falling back to video-only recording (audio backend unavailable?)"
+    fallback_notice_shown=1
+  fi
+  start_recording "⏺️" wf-recorder "$@"
+}
+
+screencast() {
+  stamp="$(date '+%y%m%d-%H%M-%S')"
+  outfile="$recording_dir/screencast-$stamp.mkv"
+  try_start_wf_recorder "⏺️🎙️" -f "$outfile" || notify "Failed to start screencast"
+}
+
+video_selection() {
+  geom=$(slurp) || return
+  [ -z "$geom" ] && return
+  stamp="$(date '+%y%m%d-%H%M-%S')"
+  outfile="$recording_dir/box-$stamp.mkv"
+  try_start_wf_recorder "⏺️" -g "$geom" -f "$outfile" || notify "Failed to start region recording"
+}
+
+audio_only() {
+  stamp="$(date '+%y%m%d-%H%M-%S')"
+  outfile="$recording_dir/audio-$stamp.flac"
+  start_recording "🎙️" ffmpeg -f pulse -i default -c:a flac "$outfile" || notify "Audio recording failed"
+}
+
+webcam() {
+  stamp="$(date '+%y%m%d-%H%M-%S')"
+  outfile="$recording_dir/webcam-$stamp.mkv"
+  start_recording "🎥" ffmpeg -f v4l2 -video_size 640x480 -i /dev/video0 "$outfile" || notify "Webcam recording failed"
+}
+
+webcam_hq() {
+  stamp="$(date '+%y%m%d-%H%M-%S')"
+  outfile="$recording_dir/webcam-hq-$stamp.mkv"
+  start_recording "🎥" ffmpeg -f v4l2 -video_size 1920x1080 -i /dev/video0 "$outfile" || notify "High-def webcam recording failed"
+}
+
+askrecording() {
+  choice=$(printf "screencast\nselected area\naudio\nwebcam\nwebcam (hi-def)\nkill recording" | $WMENU -p "Record what?" -l 6)
+  case "$choice" in
+  screencast) screencast ;;
+  "selected area") video_selection ;;
+  audio) audio_only ;;
+  webcam) webcam ;;
+  "webcam (hi-def)") webcam_hq ;;
+  "kill recording") killrecording ;;
+  *) return ;;
+  esac
+}
+
+asktoend() {
+  response=$(printf "No\nYes" | $WMENU -p "Recording still active. End it?") || return
+  [ "$response" = "Yes" ] && killrecording
+}
+
+cleanup_record_state
+
 case "$1" in
-	screencast) screencast;;
-	audio) audio;;
-	video) video;;
-	*selected) videoselected;;
-	kill) killrecording;;
-	*) ([ -f /tmp/recordingpid ] && asktoend && exit) || askrecording;;
+kill) killrecording ;;
+*)
+  if [ -f "$pidfile" ]; then
+    asktoend
+    exit 0
+  fi
+  askrecording
+  ;;
 esac
