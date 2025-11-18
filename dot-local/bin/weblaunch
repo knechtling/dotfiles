@@ -1,0 +1,75 @@
+#!/bin/sh
+
+# Pick a website/bookmark from a menu and open it with $BROWSER (or xdg-open).
+# Bookmark format: label<TAB>URL lines stored in $XDG_CONFIG_HOME/weblaunch/bookmarks.
+
+set -eu
+
+menu() {
+	if command -v wmenu >/dev/null 2>&1; then
+		wmenu "$@"
+	elif command -v dmenu >/dev/null 2>&1; then
+		dmenu "$@"
+	else
+		printf 'weblaunch: wmenu or dmenu is required\n' >&2
+		exit 1
+	fi
+}
+
+cfg_dir="${XDG_CONFIG_HOME:-"$HOME/.config"}/weblaunch"
+bookmarks_file="${WEBLAUNCH_BOOKMARKS:-$cfg_dir/bookmarks}"
+mkdir -p "$cfg_dir"
+
+bookmarks=""
+if [ -r "$bookmarks_file" ]; then
+	while IFS= read -r line; do
+		case "$line" in
+			''|\#*) continue ;;
+		esac
+		bookmarks="${bookmarks}${line}
+"
+	done <"$bookmarks_file"
+fi
+
+if [ -z "$bookmarks" ]; then
+	bookmarks="Arch Wiki\thttps://wiki.archlinux.org
+GitHub\thttps://github.com
+Hacker News\thttps://news.ycombinator.com
+"
+fi
+
+menu_lines="${WEBLAUNCH_MENU_LINES:-12}"
+menu_prompt="${WEBLAUNCH_PROMPT:-Web bookmarks}"
+menu_data="${bookmarks}Custom URL…"
+choice=$(printf "%b" "$menu_data" | menu -i -l "$menu_lines" -p "$menu_prompt")
+[ -z "$choice" ] && exit 0
+
+tab="$(printf '\t')"
+if [ "$choice" = "Custom URL…" ]; then
+	clipboard="$(wl-paste -n 2>/dev/null || true)"
+	url="$(printf "%s\n" "$clipboard" | menu -p "Open URL" -l 1)"
+	[ -z "$url" ] && exit 0
+else
+	case "$choice" in
+		*"$tab"*)
+			url="${choice#*"$tab"}"
+			;;
+		*)
+			url="$choice"
+			;;
+	esac
+fi
+url="$(printf '%s' "$url" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+[ -z "$url" ] && exit 0
+
+browser="${WEBLAUNCH_BROWSER:-${BROWSER:-}}"
+if [ -z "$browser" ]; then
+	if command -v xdg-open >/dev/null 2>&1; then
+		browser="xdg-open"
+	else
+		printf 'weblaunch: set $BROWSER or install xdg-open\n' >&2
+		exit 1
+	fi
+fi
+
+setsid -f "$browser" "$url" >/dev/null 2>&1
