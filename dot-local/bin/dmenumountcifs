@@ -3,15 +3,42 @@
 # Requirements - "%wheel ALL=(ALL) NOPASSWD: ALL"
 WMENU="wmenu -i"
 
+notify() {
+  msg=$1
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send "dmenumountcifs" "$msg"
+  else
+    printf 'dmenumountcifs: %s\n' "$msg" >&2
+  fi
+}
+
+require_tool() {
+  tool=$1
+  shift
+  msg=$*
+  [ -n "$msg" ] || msg="Missing required tool: $tool"
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    notify "$msg"
+    return 1
+  fi
+  return 0
+}
+
+require_tool avahi-browse "avahi-browse is required to discover SMB hosts" || exit 1
+require_tool wmenu "wmenu is required to display menus" || exit 1
+require_tool smbclient "smbclient is required to enumerate SMB shares" || exit 1
+require_tool mount "mount is required to attach network shares" || exit 1
+require_tool sudo "sudo is required to mount network shares" || exit 1
+
 srvname=$(avahi-browse _smb._tcp -t | awk '{print $4}' | $WMENU -p "Which NAS?" -l 6) || exit 1
-notify-send "Searching for network shares..." "Please wait..."
+notify "Searching for network shares... please wait"
 share=$(smbclient -L "$srvname" -N | grep Disk | awk '{print $1}' | $WMENU -p "Mount which share?" -l 8) || exit 1
 share2mnt=//$srvname.local/$share
 
 sharemount() {
 	mounted=$(mount -v | grep "$share2mnt") || ([ ! -d /mnt/"$share" ] && sudo mkdir /mnt/"$share")
-	[ -z "$mounted" ] && sudo mount -t cifs "$share2mnt" -o user=nobody,password="",noperm /mnt/"$share" && notify-send "Netshare $share mounted" && exit 0
-	notify-send "Netshare $share already mounted"; exit 1
+	[ -z "$mounted" ] && sudo mount -t cifs "$share2mnt" -o user=nobody,password="",noperm /mnt/"$share" && notify "Netshare $share mounted" && exit 0
+	notify "Netshare $share already mounted"; exit 1
 }
 
 sharemount

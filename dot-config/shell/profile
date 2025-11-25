@@ -10,6 +10,14 @@ export PATH="$PATH:${$(find ~/.local/bin/ -type d -printf %p:)%%:}"
 
 unsetopt PROMPT_SP
 
+# Detect host type and source environment overrides
+if command -v detect-hosttype >/dev/null 2>&1; then
+    HOSTTYPE=$(detect-hosttype)
+    export HOSTTYPE
+    [ -f "$XDG_CONFIG_HOME/environment.d/10-${HOSTTYPE}.conf" ] && \
+        . "$XDG_CONFIG_HOME/environment.d/10-${HOSTTYPE}.conf"
+fi
+
 # Default programs:
 export EDITOR="nvim"
 export TERMINAL="st"

@@ -2,19 +2,44 @@
 
 # Emoji picker script compatible with both X11 and Wayland
 # Dependencies:
-# - wofi (Wayland) or dmenu (X11)
+# - wmenu (Wayland) or dmenu (X11)
 # - wtype (Wayland typing) or xdotool (X11 typing)
 # - wl-copy (Wayland clipboard) or xclip (X11 clipboard)
 # - notify-send
 
-# Choose display protocol
+notify() {
+  msg=$1
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send "dmenuunicode" "$msg"
+  else
+    printf 'dmenuunicode: %s\n' "$msg" >&2
+  fi
+}
 
-menu_cmd="bemenu --prompt 'Pick an emoji:' --fn 'monospace 12' --line-height 20 --borders 1 --width-factor 0.5"
+require_tool() {
+  tool=$1
+  shift
+  msg=$*
+  [ -n "$msg" ] || msg="Missing required tool: $tool"
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    notify "$msg"
+    return 1
+  fi
+  return 0
+}
+
+# Choose display protocol
 if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
+  require_tool wmenu "wmenu is required to display the emoji list" || exit 1
+  require_tool wtype "wtype is required to type emojis" || exit 1
+  require_tool wl-copy "wl-copy is required to copy emojis" || exit 1
   menu_cmd="wmenu -i -l 30"
   type_cmd="wtype"
   copy_cmd="wl-copy"
 else
+  require_tool dmenu "dmenu is required to display the emoji list" || exit 1
+  require_tool xdotool "xdotool is required to type emojis" || exit 1
+  require_tool xclip "xclip is required to copy emojis" || exit 1
   menu_cmd="dmenu -i -l 30"
   type_cmd="xdotool type"
   copy_cmd="xclip -selection clipboard"
@@ -31,5 +56,5 @@ if [ -n "$1" ]; then
   eval "$type_cmd \"$chosen\""
 else
   printf "%s" "$chosen" | $copy_cmd
-  notify-send "'$chosen' copied to clipboard." &
+  notify "'$chosen' copied to clipboard."
 fi

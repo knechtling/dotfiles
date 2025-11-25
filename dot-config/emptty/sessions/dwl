@@ -1,0 +1,7 @@
+#!/bin/sh
+# emptty session file for dwl
+# See: man emptty
+
+Name=dwl
+Exec=/usr/local/bin/dwl
+Environment=wayland

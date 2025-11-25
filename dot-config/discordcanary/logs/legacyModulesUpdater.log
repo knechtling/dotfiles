@@ -1,0 +1,23 @@
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Modules initializing
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Distribution: remote
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Host updates: enabled
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Module updates: enabled
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Module install path: /home/anton/.config/discordcanary/0.0.585/modules
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Module installed file path: /home/anton/.config/discordcanary/0.0.585/modules/installed.json
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Module download path: /home/anton/.config/discordcanary/0.0.585/modules/pending
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Bootstrapping...
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Installing discord_desktop_core@0 from /opt/discord-canary/resources/bootstrap/discord_desktop_core.zip
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Failed installing discord_desktop_core@0: Error: ENOENT: no such file or directory, open '/opt/discord-canary/resources/bootstrap/discord_desktop_core.zip'
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Installing discord_erlpack@0 from /opt/discord-canary/resources/bootstrap/discord_erlpack.zip
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Failed installing discord_erlpack@0: Error: ENOENT: no such file or directory, open '/opt/discord-canary/resources/bootstrap/discord_erlpack.zip'
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Installing discord_spellcheck@0 from /opt/discord-canary/resources/bootstrap/discord_spellcheck.zip
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Failed installing discord_spellcheck@0: Error: ENOENT: no such file or directory, open '/opt/discord-canary/resources/bootstrap/discord_spellcheck.zip'
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Installing discord_utils@0 from /opt/discord-canary/resources/bootstrap/discord_utils.zip
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Failed installing discord_utils@0: Error: ENOENT: no such file or directory, open '/opt/discord-canary/resources/bootstrap/discord_utils.zip'
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Installing discord_voice@0 from /opt/discord-canary/resources/bootstrap/discord_voice.zip
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Failed installing discord_voice@0: Error: ENOENT: no such file or directory, open '/opt/discord-canary/resources/bootstrap/discord_voice.zip'
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Installing discord_zstd@0 from /opt/discord-canary/resources/bootstrap/discord_zstd.zip
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Failed installing discord_zstd@0: Error: ENOENT: no such file or directory, open '/opt/discord-canary/resources/bootstrap/discord_zstd.zip'
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Finished module installations. [success: 0] [failure: 6]
+11/21/2025, 11:19:03 PM GMT+1 [Modules] Checking for host updates.
+11/21/2025, 11:19:04 PM GMT+1 [Modules] Host update is available. Manual update required!

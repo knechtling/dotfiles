@@ -1,2 +1,26 @@
 #!/bin/sh
+
+notify() {
+  msg=$1
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send "dmenupass" "$msg"
+  else
+    printf 'dmenupass: %s\n' "$msg" >&2
+  fi
+}
+
+require_tool() {
+  tool=$1
+  shift
+  msg=$*
+  [ -n "$msg" ] || msg="Missing required tool: $tool"
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    notify "$msg"
+    return 1
+  fi
+  return 0
+}
+
+require_tool wmenu "wmenu is required to prompt for passphrases" || exit 1
+
 wmenu -P -p "$1" <&- && echo

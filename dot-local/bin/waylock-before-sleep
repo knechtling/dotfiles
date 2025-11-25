@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# Helper invoked by systemd to lock the Wayland session with waylock before
+# the machine goes to sleep or hibernates.
+set -eu
+
+log() {
+  if command -v logger >/dev/null 2>&1; then
+    logger -t waylock-before-sleep -- "$*"
+  else
+    printf 'waylock-before-sleep: %s\n' "$*" >&2
+  fi
+}
+
+if ! command -v waylock >/dev/null 2>&1; then
+  log "waylock is not installed; skipping lock"
+  exit 0
+fi
+
+if [ -z "${WAYLAND_DISPLAY:-}" ]; then
+  log "WAYLAND_DISPLAY is unset; run systemctl --user import-environment from the compositor session"
+  exit 0
+fi
+
+exec waylock -z

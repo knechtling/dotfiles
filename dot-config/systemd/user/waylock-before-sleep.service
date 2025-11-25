@@ -1,0 +1,13 @@
+[Unit]
+Description=Lock the Wayland session with waylock before the system sleeps
+Before=sleep.target suspend.target hibernate.target hybrid-sleep.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/waylock-before-sleep
+
+[Install]
+WantedBy=sleep.target
+WantedBy=suspend.target
+WantedBy=hibernate.target
+WantedBy=hybrid-sleep.target

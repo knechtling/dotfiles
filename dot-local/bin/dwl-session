@@ -1,0 +1,20 @@
+#!/bin/sh
+# DWL session startup wrapper
+# Used by emptty and can be run manually
+
+# Source profile
+[ -f "$HOME/.config/shell/profile" ] && . "$HOME/.config/shell/profile"
+
+# Detect host type and source appropriate environment
+if command -v detect-hosttype >/dev/null 2>&1; then
+    HOSTTYPE=$(detect-hosttype)
+    [ -f "$HOME/.config/environment.d/10-${HOSTTYPE}.conf" ] && . "$HOME/.config/environment.d/10-${HOSTTYPE}.conf"
+fi
+
+# Export Wayland/dwl specific variables
+export XDG_SESSION_TYPE=wayland
+export XDG_CURRENT_DESKTOP=wlroots
+export XDG_SESSION_DESKTOP=wlroots
+
+# Start dwl with startup script
+exec dwl > "$HOME/.local/state/dwl.log" 2>&1

@@ -1,0 +1,50 @@
+#!/bin/sh
+# Detects host type: laptop, vm, or desktop
+# Usage: detect-hosttype
+# Returns: laptop|vm|desktop
+
+# Check for battery (laptop indicator)
+if [ -e /sys/class/power_supply/BAT0 ] || [ -e /sys/class/power_supply/BAT1 ]; then
+    echo "laptop"
+    exit 0
+fi
+
+# Check for VM indicators
+if [ -f /sys/class/dmi/id/product_name ]; then
+    product=$(cat /sys/class/dmi/id/product_name 2>/dev/null)
+    case "$product" in
+        *QEMU*|*KVM*|*VirtualBox*|*VMware*|*"Virtual Machine"*|*HVM*domU*)
+            echo "vm"
+            exit 0
+            ;;
+    esac
+fi
+
+if [ -f /sys/class/dmi/id/sys_vendor ]; then
+    vendor=$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null)
+    case "$vendor" in
+        *QEMU*|*KVM*|*VirtualBox*|*VMware*|*"Microsoft Corporation"*)
+            echo "vm"
+            exit 0
+            ;;
+    esac
+fi
+
+if [ -f /sys/class/dmi/id/chassis_vendor ]; then
+    chassis=$(cat /sys/class/dmi/id/chassis_vendor 2>/dev/null)
+    case "$chassis" in
+        *QEMU*|*Oracle*)
+            echo "vm"
+            exit 0
+            ;;
+    esac
+fi
+
+# Check for hypervisor
+if grep -q "^flags.*hypervisor" /proc/cpuinfo 2>/dev/null; then
+    echo "vm"
+    exit 0
+fi
+
+# Default to desktop
+echo "desktop"

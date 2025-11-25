@@ -1,0 +1,12 @@
+#!/bin/sh
+
+iconfile="/tmp/recordingicon"
+
+# Print nothing when the indicator file does not exist or is empty.
+[ -s "$iconfile" ] || exit 0
+
+# Trim newlines to avoid layout issues in slstatus.
+icon=$(tr -d '\n' < "$iconfile")
+[ -n "$icon" ] || exit 0
+
+printf ' 🎥 %s | ' "$icon"

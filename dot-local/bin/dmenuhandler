@@ -2,8 +2,42 @@
 
 WMENU="wmenu"
 
+notify() {
+  msg=$1
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send "dmenuhandler" "$msg"
+  else
+    printf 'dmenuhandler: %s\n' "$msg" >&2
+  fi
+}
+
+require_tool() {
+  tool=$1
+  shift
+  msg=$*
+  [ -n "$msg" ] || msg="Missing required tool: $tool"
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    notify "$msg"
+    return 1
+  fi
+  return 0
+}
+
+require_env_command() {
+  var_name=$1
+  command_name=$2
+  value=$(eval "printf '%s' \"\${$var_name}\"")
+  if [ -z "$value" ]; then
+    notify "$var_name must point to a valid command"
+    return 1
+  fi
+  require_tool "$value" "$command_name" || return 1
+}
+
 # Prompt for a path, defaulting to the clipboard so wmenu can accept new input
 # or keep the latest selection.
+require_tool wmenu "wmenu is required to display menus" || exit 1
+require_tool wl-paste "wl-paste is required to read the clipboard" || exit 1
 clipboard="$(wl-paste -n 2>/dev/null)"
 feed="${1:-$(printf "%s\n" "$clipboard" | $WMENU -p "Paste URL or file path" -l 6)}"
 [ -z "$feed" ] && exit 0
@@ -12,26 +46,71 @@ choice="$(printf "copy url\nsxiv\nsetbg\nPDF\nbrowser\nlynx\nvim\nmpv\nmpv loop\
 [ -z "$choice" ] && exit 0
 
 case "$choice" in
-	"copy url") printf %s "$feed" | wl-copy ;;
-	mpv) setsid -f mpv -quiet "$feed" >/dev/null 2>&1 ;;
-	"mpv loop") setsid -f mpv -quiet --loop "$feed" >/dev/null 2>&1 ;;
-	"mpv float") setsid -f "$TERMINAL" -e mpv --geometry=+0-0 --autofit=30% --title="mpvfloat" "$feed" >/dev/null 2>&1 ;;
-	"queue yt-dlp") qndl "$feed" >/dev/null 2>&1 ;;
+	"copy url")
+		require_tool wl-copy "wl-copy is required to copy URLs" || exit 1
+		printf %s "$feed" | wl-copy
+		;;
+	mpv)
+		require_tool mpv "mpv is required for playback" || exit 1
+		setsid -f mpv -quiet "$feed" >/dev/null 2>&1
+		;;
+	"mpv loop")
+		require_tool mpv "mpv is required for playback" || exit 1
+		setsid -f mpv -quiet --loop "$feed" >/dev/null 2>&1
+		;;
+	"mpv float")
+		require_env_command TERMINAL "TERMINAL must point to a valid terminal emulator" || exit 1
+		require_tool mpv "mpv is required for playback" || exit 1
+		setsid -f "$TERMINAL" -e mpv --geometry=+0-0 --autofit=30% --title="mpvfloat" "$feed" >/dev/null 2>&1
+		;;
+	"queue yt-dlp")
+		require_tool qndl "qndl is required to queue downloads" || exit 1
+		qndl "$feed" >/dev/null 2>&1
+		;;
 	"queue yt-dlp audio")
-		qndl "$feed" 'yt-dlp -o "%(title)s.%(ext)s" -f bestaudio --embed-metadata --restrict-filenames' ;;
-	"queue download") qndl "$feed" 'curl -LO' >/dev/null 2>&1 ;;
+		require_tool qndl "qndl is required to queue downloads" || exit 1
+		require_tool yt-dlp "yt-dlp is required for this action" || exit 1
+		qndl "$feed" 'yt-dlp -o "%(title)s.%(ext)s" -f bestaudio --embed-metadata --restrict-filenames'
+		;;
+	"queue download")
+		require_tool qndl "qndl is required to queue downloads" || exit 1
+		require_tool curl "curl is required for queued downloads" || exit 1
+		qndl "$feed" 'curl -LO' >/dev/null 2>&1
+		;;
 	PDF)
+		require_tool curl "curl is required to fetch remote files" || exit 1
+		require_tool zathura "zathura is required to view PDFs" || exit 1
 		tmp="/tmp/$(echo "$feed" | sed "s|.*/||;s/%20/ /g")"
-		curl -sL "$feed" > "$tmp" && zathura "$tmp" >/dev/null 2>&1 ;;
+		curl -sL "$feed" > "$tmp" && zathura "$tmp" >/dev/null 2>&1
+		;;
 	sxiv)
+		require_tool curl "curl is required to fetch remote files" || exit 1
+		require_tool sxiv "sxiv is required to preview images" || exit 1
 		tmp="/tmp/$(echo "$feed" | sed "s|.*/||;s/%20/ /g")"
-		curl -sL "$feed" > "$tmp" && sxiv -a "$tmp" >/dev/null 2>&1 ;;
+		curl -sL "$feed" > "$tmp" && sxiv -a "$tmp" >/dev/null 2>&1
+		;;
 	vim)
+		require_tool curl "curl is required to fetch remote files" || exit 1
+		require_env_command TERMINAL "TERMINAL must point to a valid terminal emulator" || exit 1
+		require_env_command EDITOR "EDITOR must point to a text editor" || exit 1
 		tmp="/tmp/$(echo "$feed" | sed "s|.*/||;s/%20/ /g")"
-		curl -sL "$feed" > "$tmp" && setsid -f "$TERMINAL" -e "$EDITOR" "$tmp" >/dev/null 2>&1 ;;
+		curl -sL "$feed" > "$tmp" && setsid -f "$TERMINAL" -e "$EDITOR" "$tmp" >/dev/null 2>&1
+		;;
 	setbg)
+		require_tool curl "curl is required to fetch remote files" || exit 1
+		require_tool xwallpaper "xwallpaper is required to set backgrounds" || exit 1
 		curl -L "$feed" > "$XDG_CACHE_HOME/pic"
-		xwallpaper --zoom "$XDG_CACHE_HOME/pic" >/dev/null 2>&1 ;;
-	browser) setsid -f "$BROWSER" "$feed" >/dev/null 2>&1 ;;
-	lynx) lynx "$feed" >/dev/null 2>&1 ;;
-asac
+		xwallpaper --zoom "$XDG_CACHE_HOME/pic" >/dev/null 2>&1
+		;;
+	browser)
+		require_env_command BROWSER "BROWSER must point to a web browser" || exit 1
+		setsid -f "$BROWSER" "$feed" >/dev/null 2>&1
+		;;
+	lynx)
+		require_tool lynx "lynx is required for this action" || exit 1
+		lynx "$feed" >/dev/null 2>&1
+		;;
+	*)
+		exit 0
+		;;
+esac
