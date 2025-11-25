@@ -1,136 +1,230 @@
 #!/bin/sh
+set -x
 
-# dwl may close stdin for keybind commands; reopen so slurp/wmenu still work.
-if [ ! -e /proc/self/fd/0 ]; then
-  exec </dev/null
-fi
+# Minimal wf-recorder wrapper for dmenu keybinds.
+[ -e /proc/self/fd/0 ] || exec </dev/null
 
-WMENU="wmenu -i"
-recording_dir="${VIDEO_RECORDINGS:-$HOME/Videos/screencasts}"
-mkdir -p "$recording_dir"
-pidfile="/tmp/recordingpid"
-iconfile="/tmp/recordingicon"
-statusbar="${STATUSBAR:-dwmblocks}"
+DMENU="${DMENU:-${WMENU:-wmenu -i}}"
+RECORD_DIR="${VIDEO_RECORDINGS:-$HOME/Videos/screencasts}"
+PIDFILE="/tmp/dmenurecord.pid"
+OUTFILE="/tmp/dmenurecord.file"
+ICONFILE="/tmp/recordingicon"
+LOGFILE="${XDG_STATE_HOME:-$HOME/.local/state}/dmenurecord.log"
 fallback_notice_shown=0
 
-notify() {
-  msg=$1
-  if command -v notify-send >/dev/null 2>&1; then
-    notify-send "Screen recorder" "$msg"
-  else
-    printf 'dmenurecord: %s\n' "$msg" >&2
-  fi
+mkdir -p "$RECORD_DIR" "$(dirname "$LOGFILE")"
+
+log() { printf '%s %s\n' "$(date '+%F %T')" "$*" >>"$LOGFILE"; }
+notify() { command -v notify-send >/dev/null 2>&1 && notify-send "dmenurecord" "$1" || printf 'dmenurecord: %s\n' "$1" >&2; }
+
+require() {
+  command -v "$1" >/dev/null 2>&1 || {
+    notify "Missing required tool: $1"
+    return 1
+  }
 }
 
-updateicon() {
-  echo "$1" >"$iconfile"
-  pkill -RTMIN+9 "$statusbar" >/dev/null 2>&1
+record_pid() { [ -s "$PIDFILE" ] && cat "$PIDFILE"; }
+record_file() { [ -s "$OUTFILE" ] && cat "$OUTFILE"; }
+clear_state() { rm -f "$PIDFILE" "$OUTFILE" "$ICONFILE"; }
+
+wait_for_file() {
+  file=$1
+  [ -n "$file" ] || return 1
+  # WAIT UP TO 10 seconds for file to be written
+  for _ in $(seq 1 100); do
+    [ -s "$file" ] && return 0
+    sleep 0.1
+  done
+  return 1
 }
 
-cleanup_record_state() {
-  [ ! -f "$pidfile" ] && return
-  recpid=$(cat "$pidfile")
-  if kill -0 "$recpid" >/dev/null 2>&1; then
+record_active() {
+  pid=$(record_pid) || return 1
+  kill -0 "$pid" >/dev/null 2>&1
+}
+
+set_state() {
+  printf '%s\n' "$1" >"$PIDFILE"
+  printf '%s\n' "$2" >"$OUTFILE"
+  printf '%s\n' "$3" >"$ICONFILE"
+}
+
+timestamp() { date '+%y%m%d-%H%M-%S'; }
+
+start_recorder() {
+  icon=$1
+  file=$2
+  shift 2
+  log "Starting: $* -> $file"
+  (exec "$@" >>"$LOGFILE" 2>&1) &
+  pid=$!
+  sleep 0.2
+  kill -0 "$pid" >/dev/null 2>&1 || {
+    notify "Recorder exited immediately"
+    clear_state
+    return 1
+  }
+  set_state "$pid" "$file" "$icon"
+  log "Recording pid=$pid file=$file"
+}
+
+start_wf() {
+  mode=$1
+  audio=$2 # with | without | auto
+  require wf-recorder || return
+  record_active && {
+    notify "Recording already running"
+    return
+  }
+
+  file="$RECORD_DIR/${mode}-$(timestamp).mkv"
+
+  case "$mode" in
+  screencast | screencast-noaudio)
+    ;;
+  region | region-noaudio)
+    require slurp || return
+    geom=$(slurp) || return
+    [ -n "$geom" ] || return
+    ;;
+  *)
+    return
+    ;;
+  esac
+
+  set_wf_args_with_audio() {
+    case "$mode" in
+    screencast | screencast-noaudio)
+      set -- wf-recorder -a -f "$file"
+      ;;
+    region | region-noaudio)
+      set -- wf-recorder -g "$geom" -a -f "$file"
+      ;;
+    esac
+  }
+
+  set_wf_args_video_only() {
+    case "$mode" in
+    screencast | screencast-noaudio)
+      set -- wf-recorder -f "$file"
+      ;;
+    region | region-noaudio)
+      set -- wf-recorder -g "$geom" -f "$file"
+      ;;
+    esac
+  }
+
+  if [ "$audio" = "with" ]; then
+    set_wf_args_with_audio
+    start_recorder "⏺️🎙️" "$file" "$@"
     return
   fi
-  rm -f "$pidfile"
-  updateicon ""
-}
 
-killrecording() {
-  [ ! -f "$pidfile" ] && return
-  recpid=$(cat "$pidfile")
-  kill -TERM -- "-$recpid" >/dev/null 2>&1 || kill -TERM "$recpid" >/dev/null 2>&1
-  rm -f "$pidfile"
-  updateicon ""
-}
-
-start_recording() {
-  icon="$1"
-  shift
-  setsid "$@" >/dev/null 2>&1 &
-  recpid=$!
-  sleep 0.2
-  if ! kill -0 "$recpid" >/dev/null 2>&1; then
-    return 1
+  if [ "$audio" = "without" ]; then
+    set_wf_args_video_only
+    start_recorder "⏺️" "$file" "$@"
+    return
   fi
-  echo "$recpid" >"$pidfile"
-  updateicon "$icon"
-  return 0
+
+  # auto: try with audio, then fallback to video-only
+  set_wf_args_with_audio
+  start_recorder "⏺️🎙️" "$file" "$@" && return
+
+  [ $fallback_notice_shown -eq 0 ] && notify "Falling back to video-only (audio backend unavailable?)"
+  fallback_notice_shown=1
+
+  set_wf_args_video_only
+  start_recorder "⏺️" "$file" "$@"
 }
 
-try_start_wf_recorder() {
-  icon="$1"
-  shift
-  if start_recording "$icon" wf-recorder -a "$@"; then
-    return 0
+start_audio_only() {
+  require ffmpeg || return
+  record_active && {
+    notify "Recording already running"
+    return
+  }
+  file="$RECORD_DIR/audio-$(timestamp).flac"
+  start_recorder "🎙️" "$file" ffmpeg -f pulse -i default -c:a flac "$file" || notify "Audio recording failed"
+}
+
+start_webcam() {
+  size=$1
+  label=$2
+  require ffmpeg || return
+  record_active && {
+    notify "Recording already running"
+    return
+  }
+  file="$RECORD_DIR/${label}-$(timestamp).mkv"
+  start_recorder "🎥" "$file" ffmpeg -f v4l2 -video_size "$size" -i /dev/video0 "$file" || notify "Webcam recording failed"
+}
+
+stop_recording() {
+  pid=$(record_pid) || {
+    notify "No recording in progress"
+    return
+  }
+  file=$(record_file)
+
+  # Tell wf-recorder to stop (expects SIGINT; fall back to SIGTERM)
+  kill -INT "$pid" >/dev/null 2>&1 || kill -INT -- "-$pid" >/dev/null 2>&1 || kill -TERM "$pid" >/dev/null 2>&1 || kill -TERM -- "-$pid" >/dev/null 2>&1 || true
+
+  # WAIT for recorder to finalize (UP TO 60 seconds)
+  MAX_WAIT=600 # 600 * 0.1 = 60 seconds
+  wait_count=0
+
+  while kill -0 "$pid" >/dev/null 2>&1 && [ $wait_count -lt $MAX_WAIT ]; do
+    sleep 0.1
+    wait_count=$((wait_count + 1))
+  done
+
+  # If still alive after 60 seconds → kill it, but this almost never happens now
+  if kill -0 "$pid" >/dev/null 2>&1; then
+    kill -KILL "$pid" >/dev/null 2>&1 || kill -KILL -- "-$pid" >/dev/null 2>&1
   fi
-  if [ $fallback_notice_shown -eq 0 ]; then
-    notify "Falling back to video-only recording (audio backend unavailable?)"
-    fallback_notice_shown=1
+
+  clear_state
+
+  if wait_for_file "$file"; then
+    notify "Saved recording to $file"
+    log "Recording saved $file"
+  else
+    notify "Recording failed for $file"
+    log "Recording empty $file"
   fi
-  start_recording "⏺️" wf-recorder "$@"
 }
 
-screencast() {
-  stamp="$(date '+%y%m%d-%H%M-%S')"
-  outfile="$recording_dir/screencast-$stamp.mkv"
-  try_start_wf_recorder "⏺️🎙️" -f "$outfile" || notify "Failed to start screencast"
+prompt_menu() {
+  printf '🖥️ Screen (full, audio)\n📐 Screen (region, audio)\n🖥️🔇 Screen (full, no audio)\n📐🔇 Screen (region, no audio)\n🎙️ Audio only\n🎥 Webcam\n🎥✨ Webcam (hi-def)\n⏹️ Stop\n' | $DMENU -p "Record?"
 }
-
-video_selection() {
-  geom=$(slurp) || return
-  [ -z "$geom" ] && return
-  stamp="$(date '+%y%m%d-%H%M-%S')"
-  outfile="$recording_dir/box-$stamp.mkv"
-  try_start_wf_recorder "⏺️" -g "$geom" -f "$outfile" || notify "Failed to start region recording"
-}
-
-audio_only() {
-  stamp="$(date '+%y%m%d-%H%M-%S')"
-  outfile="$recording_dir/audio-$stamp.flac"
-  start_recording "🎙️" ffmpeg -f pulse -i default -c:a flac "$outfile" || notify "Audio recording failed"
-}
-
-webcam() {
-  stamp="$(date '+%y%m%d-%H%M-%S')"
-  outfile="$recording_dir/webcam-$stamp.mkv"
-  start_recording "🎥" ffmpeg -f v4l2 -video_size 640x480 -i /dev/video0 "$outfile" || notify "Webcam recording failed"
-}
-
-webcam_hq() {
-  stamp="$(date '+%y%m%d-%H%M-%S')"
-  outfile="$recording_dir/webcam-hq-$stamp.mkv"
-  start_recording "🎥" ffmpeg -f v4l2 -video_size 1920x1080 -i /dev/video0 "$outfile" || notify "High-def webcam recording failed"
-}
-
-askrecording() {
-  choice=$(printf "screencast\nselected area\naudio\nwebcam\nwebcam (hi-def)\nkill recording" | $WMENU -p "Record what?" -l 6)
-  case "$choice" in
-  screencast) screencast ;;
-  "selected area") video_selection ;;
-  audio) audio_only ;;
-  webcam) webcam ;;
-  "webcam (hi-def)") webcam_hq ;;
-  "kill recording") killrecording ;;
-  *) return ;;
-  esac
-}
-
-asktoend() {
-  response=$(printf "No\nYes" | $WMENU -p "Recording still active. End it?") || return
-  [ "$response" = "Yes" ] && killrecording
-}
-
-cleanup_record_state
 
 case "$1" in
-kill) killrecording ;;
-*)
-  if [ -f "$pidfile" ]; then
-    asktoend
-    exit 0
+start | menu | "")
+  if record_active; then
+    stop_recording
+    exit
   fi
-  askrecording
+  choice=$(prompt_menu) || exit
+  case "$choice" in
+  "🖥️ Screen (full, audio)") start_wf screencast auto ;;
+  "📐 Screen (region, audio)") start_wf region auto ;;
+  "🖥️🔇 Screen (full, no audio)") start_wf screencast-noaudio without ;;
+  "📐🔇 Screen (region, no audio)") start_wf region-noaudio without ;;
+  "🎙️ Audio only") start_audio_only ;;
+  "🎥 Webcam") start_webcam 640x480 webcam ;;
+  "🎥✨ Webcam (hi-def)") start_webcam 1920x1080 webcam-hq ;;
+  "⏹️ Stop") stop_recording ;;
+  esac
+  ;;
+stop | kill)
+  stop_recording
+  ;;
+status)
+  record_active && [ -s "$ICONFILE" ] && tr -d '\n' <"$ICONFILE" && printf '\n'
+  ;;
+*)
+  printf 'Usage: %s [start|stop|status]\n' "$0" >&2
+  exit 1
   ;;
 esac
