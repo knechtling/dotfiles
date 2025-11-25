@@ -93,49 +93,37 @@ start_wf() {
     ;;
   esac
 
-  set_wf_args_with_audio() {
+  build_and_start() {
+    want_audio=$1 # yes | no
+    icon=$2
+    set -- wf-recorder
     case "$mode" in
-    screencast | screencast-noaudio)
-      set -- wf-recorder -a -f "$file"
-      ;;
     region | region-noaudio)
-      set -- wf-recorder -g "$geom" -a -f "$file"
+      set -- "$@" -g "$geom"
       ;;
     esac
-  }
-
-  set_wf_args_video_only() {
-    case "$mode" in
-    screencast | screencast-noaudio)
-      set -- wf-recorder -f "$file"
-      ;;
-    region | region-noaudio)
-      set -- wf-recorder -g "$geom" -f "$file"
-      ;;
-    esac
+    [ "$want_audio" = "yes" ] && set -- "$@" -a
+    set -- "$@" -f "$file"
+    start_recorder "$icon" "$file" "$@"
   }
 
   if [ "$audio" = "with" ]; then
-    set_wf_args_with_audio
-    start_recorder "⏺️🎙️" "$file" "$@"
+    build_and_start yes "⏺️🎙️"
     return
   fi
 
   if [ "$audio" = "without" ]; then
-    set_wf_args_video_only
-    start_recorder "⏺️" "$file" "$@"
+    build_and_start no "⏺️"
     return
   fi
 
   # auto: try with audio, then fallback to video-only
-  set_wf_args_with_audio
-  start_recorder "⏺️🎙️" "$file" "$@" && return
+  build_and_start yes "⏺️🎙️" && return
 
   [ $fallback_notice_shown -eq 0 ] && notify "Falling back to video-only (audio backend unavailable?)"
   fallback_notice_shown=1
 
-  set_wf_args_video_only
-  start_recorder "⏺️" "$file" "$@"
+  build_and_start no "⏺️"
 }
 
 start_audio_only() {
