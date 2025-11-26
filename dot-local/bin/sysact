@@ -4,6 +4,7 @@
 set -eu
 
 export WM="dwl"
+STOPFILE="${XDG_CACHE_HOME:-$HOME/.cache}/dwl-stop"
 
 case "$(readlink -f /sbin/init)" in
 *systemd*) ctl='systemctl' ;;
@@ -36,10 +37,35 @@ wmpid() {
   printf '%s\n' "${tree%%)*}"
 }
 
-case "$(printf "🔒 lock\n🚪 leave $WM\n♻️ renew $WM\n🐻 hibernate\n🔃 reboot\n🖥️shutdown\n💤 sleep\n📺 display off" | wmenu -i -p 'Action: ')" in
-'🔒 lock') waylock ;;
-"🚪 leave $WM") kill -TERM "$(wmpid)" ;;
-"♻️ renew $WM") kill -HUP "$(wmpid)" ;;
+menu_items="🔒 lock
+🚪 leave $WM
+♻️ renew $WM
+🐻 hibernate
+🔃 reboot
+🖥️ shutdown
+💤 sleep"
+
+choice="$(printf '%s\n' "$menu_items" | wmenu -i -p 'Action: ')"
+
+case "$choice" in
+'🔒 lock')
+  need_cmd waylock
+  waylock -z
+  ;;
+"🚪 leave $WM")
+  pid="$(wmpid)"
+  mkdir -p "$(dirname "$STOPFILE")"
+  : >"$STOPFILE"
+  kill -TERM "$pid"
+  ;;
+"♻️ renew $WM")
+  pid="$(wmpid)"
+  if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+    kill -HUP "$pid"
+  else
+    notify "Unable to find running $WM process."
+  fi
+  ;;
 '🐻 hibernate')
   $ctl hibernate -i
   waylock
