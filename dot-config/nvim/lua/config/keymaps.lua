@@ -6,3 +6,4 @@ vim.keymap.set("n", "<leader>fx", ":!chmod +x %<CR>", {
   silent = true,
   noremap = true,
 })
+vim.cmd("cnoreabbrev w!! w !sudo tee % >/dev/null | edit!")
