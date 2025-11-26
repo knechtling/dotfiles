@@ -1,4 +1,22 @@
 #!/bin/sh
 
-# Start dwl with slstatus bar
-slstatus -s | dwl -s dwl-startup.sh
+# Single entry point for emptty; loops dwl until it exits cleanly.
+LOGFILE="${XDG_CACHE_HOME:-$HOME/.cache}/dwl-session.log"
+STOPFILE="${XDG_CACHE_HOME:-$HOME/.cache}/dwl-stop"
+
+export PATH="$HOME/.local/bin:$PATH"
+cd "$HOME" || exit 1
+
+mkdir -p "$(dirname "$LOGFILE")"
+
+while :; do
+	[ -f "$STOPFILE" ] && rm -f "$STOPFILE" && break
+
+	printf '[%s] starting dwl\n' "$(date '+%F %T')" >>"$LOGFILE"
+	slstatus -s | dwl -s dwl-startup.sh
+	status=$?
+	printf '[%s] dwl exited (%s)\n' "$(date '+%F %T')" "$status" >>"$LOGFILE"
+
+	[ "$status" -eq 0 ] && break
+	sleep 1
+done
