@@ -36,12 +36,7 @@ pgrep -f 'wl-paste --watch cliphist store' >/dev/null 2>&1 || wl-paste --watch c
 
 pgrep -x 'walker' >/dev/null 2>&1 || walker --gapplication-service &
 pgrep -x 'swayosd-server' >/dev/null 2>&1 || swayosd-server &
-pgrep -x 'swayidle' >/dev/null 2>&1 || swayidle \
-  timeout 300 'brightnessctl set 30%' \
-  timeout 600 'waylock' \
-  timeout 900 'systemctl suspend' \
-  resume 'brightnessctl set 100%' \
-  before-sleep 'waylock'
+pgrep -x 'swayidle' >/dev/null 2>&1 || swayidle -w &
 
 # Foot terminal server (for footclient spawning)
 pgrep -f 'foot --server' >/dev/null 2>&1 || foot --server &
