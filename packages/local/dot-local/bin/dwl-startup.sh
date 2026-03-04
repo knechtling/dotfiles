@@ -1,4 +1,5 @@
 #!/bin/sh
+## DEPRECATED
 
 # Detect host type
 if command -v detect-hosttype >/dev/null 2>&1; then
@@ -40,3 +41,10 @@ pgrep -x 'swayidle' >/dev/null 2>&1 || swayidle -w &
 
 # Foot terminal server (for footclient spawning)
 pgrep -f 'foot --server' >/dev/null 2>&1 || foot --server &
+
+# swayosd-server for visual popups
+pgrep -x swayosd-server >/dev/null 2>&1 || swayosd-server &
+
+pgrep -f 'walker --gapplication-service' >/dev/null 2>&1 || walker --gapplication-service &
+
+pgrep -x 'swayidle ' >/dev/null 2>&1 || walker --gapplication-service &
