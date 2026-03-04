@@ -28,22 +28,8 @@ menu:
       "m": { desc: Mounter, cmd: "mounter" }
       "u": { desc: Unmounter, cmd: "unmounter" }
       "d": { desc: Display Configuration, cmd: "wdisplays" }
+      "k": { desc: Keyboard and Mouse Configuration, cmd: "solaar" }
       "s": { desc: System Monitor, cmd: "foot -T floating -e btop" }
-
-  "m":
-    desc: Media
-    submenu:
-      "minus":
-        { desc: Volume -5%, cmd: "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-" }
-      "plus":
-        { desc: Volume +5%, cmd: "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+" }
-      "m":
-        { desc: Toggle Mute, cmd: "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle" }
-      "n": { desc: Next Track, cmd: "mpc next" }
-      "p": { desc: Previous Track, cmd: "mpc prev" }
-      "Return": { desc: Play, cmd: "mpc play" }
-      "space": { desc: Pause, cmd: "mpc pause" }
-      "s": { desc: Stop, cmd: "mpc stop" }
 
   "l":
     desc: Learn
