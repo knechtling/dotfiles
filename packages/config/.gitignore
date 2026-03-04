@@ -1,3 +1,5 @@
 dot-config/TabNine/
 dot-config/pulse/
 dot-config/ibus/
+dot-config/nvim/.nvimlog
+dot-config/tmux/plugins/
