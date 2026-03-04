@@ -1,9 +1,11 @@
 #!/bin/sh
+
 export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
 export MOZ_ENABLE_WAYLAND=1
 export QT_QPA_PLATFORM=wayland
 export XDG_SESSION_TYPE=wayland
 export XDG_CURRENT_DESKTOP=dwl
 export XDG_SESSION_DESKTOP=dwl
-# exec dbus-run-session -- dwl -s "$HOME/.local/bin/dwl-startup.sh" >>"$HOME/.local/share/dwl/dwl.log" 2>&1
-slstatus -s | dwl -s "$HOME/.local/bin/dwl-startup.sh"
+
+exec dbus-run-session sh -c \
+  'exec slstatus -s | exec dwl -s "$HOME/.local/bin/dwl-startup.sh"'

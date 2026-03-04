@@ -35,7 +35,6 @@ setbg ~/.local/share/wallpapers
 # Clipboard manager
 pgrep -f 'wl-paste --watch cliphist store' >/dev/null 2>&1 || wl-paste --watch cliphist store &
 
-pgrep -x 'walker' >/dev/null 2>&1 || walker --gapplication-service &
 pgrep -x 'swayosd-server' >/dev/null 2>&1 || swayosd-server &
 pgrep -x 'swayidle' >/dev/null 2>&1 || swayidle -w &
 
@@ -46,5 +45,3 @@ pgrep -f 'foot --server' >/dev/null 2>&1 || foot --server &
 pgrep -x swayosd-server >/dev/null 2>&1 || swayosd-server &
 
 pgrep -f 'walker --gapplication-service' >/dev/null 2>&1 || walker --gapplication-service &
-
-pgrep -x 'swayidle ' >/dev/null 2>&1 || walker --gapplication-service &
