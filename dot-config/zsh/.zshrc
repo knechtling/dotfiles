@@ -180,19 +180,19 @@ fpath=(~/.config/zsh/ $fpath)
 ## Load plugins; should be last.
 
 # Fast Syntax Highlighting
-F_SH_PLUGIN="/usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+F_SH_PLUGIN="$HOME/.local/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 [ -s "$F_SH_PLUGIN" ] && source "$F_SH_PLUGIN" || echo "Error: Unable to source $F_SH_PLUGIN, file not found!"
 
 # Zsh Autosuggestions
-ZSH_AUTOSUGGESTIONS_PLUGIN="/usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
+ZSH_AUTOSUGGESTIONS_PLUGIN="$HOME/.local/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
 [ -s "$ZSH_AUTOSUGGESTIONS_PLUGIN" ] && source "$ZSH_AUTOSUGGESTIONS_PLUGIN" || echo "Error: Unable to source $ZSH_AUTOSUGGESTIONS_PLUGIN, file not found!"
 
 # Zsh History Substring Search
-ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN="/usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh"
+ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN="$HOME/.local/share/zsh/plugins/zsh-fzf-history-search/zsh-fzf-history-search.plugin.zsh"
 [ -s "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" ] && source "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" || echo "Error: Unable to source $ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN, file not found!"
 
 # Autojump
-AUTOJUMP_PLUGIN="/usr/share/autojump/autojump.zsh"
+AUTOJUMP_PLUGIN="$HOME/.local/share/zsh/plugins/autojump/autojump.zsh"
 [[ -s "$AUTOJUMP_PLUGIN" ]] && source "$AUTOJUMP_PLUGIN" || echo "Error: Unable to source autojump.zsh, file not found!"
 
 FZF_HISTORY_PLUGIN="$HOME/.local/share/zsh/plugins/zsh-fzf-history-search/zsh-fzf-history-search.plugin.zsh"
