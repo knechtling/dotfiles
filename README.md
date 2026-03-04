@@ -3,7 +3,7 @@ clone the repository
 
 `cd dotfiles`
 
-`stow --dotfiles --no-folding --[stow|restow|delete] packages/config packages/local packages/shell`
+`stow -d /home/anton/dotfiles/packages -t /home/anton --dotfiles --no-folding --[stow|restow|delete] config local shell`
 
 ## Lock before suspending on lid close
 
