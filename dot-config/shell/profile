@@ -53,12 +53,18 @@ export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/pythonrc"
 export SQLITE_HISTORY="$XDG_DATA_HOME/sqlite_history"
 export ANDROID_HOME="$XDG_DATA_HOME"/android
 export GNUPGHOME="$XDG_DATA_HOME"/gnupg
-export _JAVA_OPTIONS=-Djava.util.prefs.userRoot="$XDG_CONFIG_HOME"/java
+export _JAVA_OPTIONS="-Djava.util.prefs.userRoot=$XDG_CONFIG_HOME/java -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=32M"
+
+# Optimized ATLauncher with gamemode
+alias atlauncher-game='GDK_BACKEND=x11 QT_QPA_PLATFORM=xcb MESA_GL_VERSION_OVERRIDE=4.6 AMD_VULKAN_ICD=RADV gamemoderun atlauncher'
+
+# Native Wayland Minecraft launcher
+alias minecraft-wayland='QT_QPA_PLATFORM=wayland MESA_GL_VERSION_OVERRIDE=4.6 AMD_VULKAN_ICD=RADV gamemoderun prismlauncher'
 export RUSTUP_HOME="$XDG_DATA_HOME"/rustup
 export GRADLE_USER_HOME="$XDG_DATA_HOME"/gradle
 export KODI_DATA="$XDG_DATA_HOME"/kodi
 export LESSHISTFILE="$XDG_CACHE_HOME"/less/history
-export MANPAGER="nvim +Man!"
+export MANPAGER="less"
 export SANE_DEFAULT_DEVICE="airscan:e0:Canon TR4700 series"
 #
 # Enable screen sharing for dwl
