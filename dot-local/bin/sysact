@@ -33,8 +33,8 @@ need_cmd notify-send pstree wmenu "$ctl"
 
 wmpid() {
   tree="$(pstree -ps $$)"
-  tree="${tree#*$WM(}"
-  printf '%s\n' "${tree%%)*}"
+  tree="${tree#*$WM\(}"
+  printf '%s\n' "${tree%%\)*}"
 }
 
 menu_items="🔒 lock
@@ -50,9 +50,10 @@ choice="$(printf '%s\n' "$menu_items" | wmenu -i -p 'Action: ')"
 case "$choice" in
 '🔒 lock')
   need_cmd waylock
-  waylock -z
+  waylock
   ;;
 "🚪 leave $WM")
+  need_cmd waylock
   pid="$(wmpid)"
   mkdir -p "$(dirname "$STOPFILE")"
   : >"$STOPFILE"
@@ -61,17 +62,19 @@ case "$choice" in
 "♻️ renew $WM")
   pid="$(wmpid)"
   if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
-    kill -HUP "$pid"
+    kill -USR1 "$pid"
   else
     notify "Unable to find running $WM process."
   fi
   ;;
 '🐻 hibernate')
   $ctl hibernate -i
+  need_cmd waylock
   waylock
   ;;
 '💤 sleep')
   $ctl suspend -i
+  need_cmd waylock
   waylock
   ;;
 '🔃 reboot') $ctl reboot -i ;;
