@@ -68,21 +68,17 @@ zle -N zle-line-init
 echo -ne '\e[5 q' # Use beam shape cursor on startup.
 preexec() { echo -ne '\e[5 q' ;} # Use beam shape cursor for each new prompt.
 
-# Use lf to switch directories and bind it to ctrl-o
+# Use lf to switch directories and bind it to ctrl-g
 lfcd () {
     tmp="$(mktemp -uq)"
     trap 'rm -f $tmp >/dev/null 2>&1 && trap - HUP INT QUIT TERM PWR EXIT' HUP INT QUIT TERM PWR EXIT
-    lf -last-dir-path="$tmp" "$@"
+    lfub -last-dir-path="$tmp" "$@"
     if [ -f "$tmp" ]; then
         dir="$(cat "$tmp")"
         [ -d "$dir" ] && [ "$dir" != "$(pwd)" ] && cd "$dir"
     fi
 }
-bindkey -s '^o' '^ulfub\n'
-
-# bindkey -s '^a' '^ubc -lq\n'
-
-bindkey -s '^f' '^ucd "$(dirname "$(fzf)")"\n'
+bindkey -s '^g' '^ulfcd\n'
 
 bindkey '^[[P' delete-char
 
@@ -180,22 +176,19 @@ fpath=(~/.config/zsh/ $fpath)
 ## Load plugins; should be last.
 
 # Fast Syntax Highlighting
-F_SH_PLUGIN="$HOME/.local/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+F_SH_PLUGIN="/usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 [ -s "$F_SH_PLUGIN" ] && source "$F_SH_PLUGIN" || echo "Error: Unable to source $F_SH_PLUGIN, file not found!"
-
 # Zsh Autosuggestions
-ZSH_AUTOSUGGESTIONS_PLUGIN="$HOME/.local/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
+ZSH_AUTOSUGGESTIONS_PLUGIN="/usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
 [ -s "$ZSH_AUTOSUGGESTIONS_PLUGIN" ] && source "$ZSH_AUTOSUGGESTIONS_PLUGIN" || echo "Error: Unable to source $ZSH_AUTOSUGGESTIONS_PLUGIN, file not found!"
-
 # Zsh History Substring Search
-ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN="$HOME/.local/share/zsh/plugins/zsh-fzf-history-search/zsh-fzf-history-search.plugin.zsh"
+ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN="/usr/share/zsh/plugins/zsh-fzf-history-search/zsh-fzf-history-search.plugin.zsh"
 [ -s "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" ] && source "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" || echo "Error: Unable to source $ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN, file not found!"
-
 # Autojump
-AUTOJUMP_PLUGIN="$HOME/.local/share/zsh/plugins/autojump/autojump.zsh"
+AUTOJUMP_PLUGIN="/usr/share/autojump/autojump.zsh"
 [[ -s "$AUTOJUMP_PLUGIN" ]] && source "$AUTOJUMP_PLUGIN" || echo "Error: Unable to source autojump.zsh, file not found!"
-
-FZF_HISTORY_PLUGIN="$HOME/.local/share/zsh/plugins/zsh-fzf-history-search/zsh-fzf-history-search.plugin.zsh"
+# FZF History Search
+FZF_HISTORY_PLUGIN="/usr/share/zsh/plugins/zsh-fzf-history-search/zsh-fzf-history-search.plugin.zsh"
 [[ -s "$FZF_HISTORY_PLUGIN" ]] && source "$FZF_HISTORY_PLUGIN" || echo "Error: Unable to source $FZF_HISTORY_PLUGIN, file not found!"
 # Load aliases
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/aliasrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/aliasrc"

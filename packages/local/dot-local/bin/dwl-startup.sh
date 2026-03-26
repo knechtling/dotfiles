@@ -45,3 +45,5 @@ pgrep -f 'foot --server' >/dev/null 2>&1 || foot --server &
 pgrep -x swayosd-server >/dev/null 2>&1 || swayosd-server &
 
 pgrep -f 'walker --gapplication-service' >/dev/null 2>&1 || walker --gapplication-service &
+
+systemctl --user restart elephant
