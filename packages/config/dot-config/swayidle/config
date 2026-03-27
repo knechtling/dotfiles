@@ -1,10 +1,9 @@
-  timeout 290 'notify-send "screen blacking in 10 seconds"'
+timeout 290 'notify-send "screen blacking in 10 seconds"'
 # after 5 min black the screen
-  timeout 300 'wlopm --off *'
-  timeout 310 'waylock'
+timeout 300 'wlopm --off *' resume 'wlopm --on *'
+timeout 310 'waylock'
 # after 8 min suspend system
-  timeout 480 'loginctl suspend'
+timeout 480 'loginctl suspend'
+timeout 7200 'loginctl hibernate'
 # after 2 hours hibernate system
-  timeout 7200 'loginctl hibernate'
-  resume 'wlopm --on *'
-  before-sleep 'waylock'
+before-sleep 'waylock'
