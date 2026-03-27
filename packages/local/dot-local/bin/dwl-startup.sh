@@ -36,7 +36,7 @@ setbg ~/.local/share/wallpapers
 pgrep -f 'wl-paste --watch cliphist store' >/dev/null 2>&1 || wl-paste --watch cliphist store &
 
 pgrep -x 'swayosd-server' >/dev/null 2>&1 || swayosd-server &
-pgrep -x 'swayidle' >/dev/null 2>&1 || swayidle -w &
+pgrep -x 'swayidle' >/dev/null 2>&1 || swayidle -w -C "$HOME/.config/swayidle/config" &
 
 # Foot terminal server (for footclient spawning)
 pgrep -f 'foot --server' >/dev/null 2>&1 || foot --server &
@@ -45,3 +45,5 @@ pgrep -f 'foot --server' >/dev/null 2>&1 || foot --server &
 pgrep -x swayosd-server >/dev/null 2>&1 || swayosd-server &
 
 pgrep -f 'walker --gapplication-service' >/dev/null 2>&1 || walker --gapplication-service &
+
+systemctl --user restart elephant
