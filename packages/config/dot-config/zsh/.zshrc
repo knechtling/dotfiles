@@ -175,6 +175,9 @@ fpath=(~/.config/zsh/ $fpath)
 
 ## Load plugins; should be last.
 
+# xc manager
+XC_MANAGER="/usr/share/zsh/plugins/xc-manager/xc.plugin.zsh"
+[[ -s "$XC_MANAGER" ]] && source "$XC_MANAGER" || echo "Error: Unable to source $XC_MANAGER, file not found!"
 # Fast Syntax Highlighting
 F_SH_PLUGIN="/usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 [ -s "$F_SH_PLUGIN" ] && source "$F_SH_PLUGIN" || echo "Error: Unable to source $F_SH_PLUGIN, file not found!"
