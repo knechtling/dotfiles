@@ -4,19 +4,44 @@
 LOGFILE="${XDG_CACHE_HOME:-$HOME/.cache}/dwl-session.log"
 STOPFILE="${XDG_CACHE_HOME:-$HOME/.cache}/dwl-stop"
 
-export PATH="$HOME/.local/bin:$PATH"
+# emptty execs this script directly after PAM, without a login shell, so
+# ~/.config/shell/profile is never sourced. That profile is zsh-specific
+# (uses ${$(...)%%:} style parameter expansion + unsetopt), so we can't
+# simply source it from /bin/sh. Instead, ensure ~/.local/bin -- which is
+# what startw/dwl-startup.sh actually need to find setbg, wlr-randr wrappers,
+# mako, etc. -- is on PATH.
+case ":$PATH:" in
+  *":$HOME/.local/bin:"*) ;;
+  *) PATH="$HOME/.local/bin:$PATH" ;;
+esac
+export PATH
+
 cd "$HOME" || exit 1
 
 mkdir -p "$(dirname "$LOGFILE")"
 
-while :; do
-	[ -f "$STOPFILE" ] && rm -f "$STOPFILE" && break
-
-	printf '[%s] starting dwl\n' "$(date '+%F %T')" >>"$LOGFILE"
-	slstatus -s | dwl -s dwl-startup.sh
-	status=$?
-	printf '[%s] dwl exited (%s)\n' "$(date '+%F %T')" "$status" >>"$LOGFILE"
-
-	[ "$status" -eq 0 ] && break
-	sleep 1
+# Clean up stale Xwayland sockets left over from a previously crashed session;
+# otherwise Xwayland fails with "Failed to bind socket @/tmp/.X11-unix/X0:
+# Address already in use" and X11 apps break inside dwl.
+for f in /tmp/.X11-unix/X0 /tmp/.X0-lock; do
+  if [ -e "$f" ] && ! fuser "$f" >/dev/null 2>&1; then
+    rm -f "$f"
+  fi
 done
+
+while :; do
+  [ -f "$STOPFILE" ] && rm -f "$STOPFILE" && break
+
+  printf '[%s] starting dwl\n' "$(date '+%F %T')" >>"$LOGFILE"
+  slstatus -s | dwl -s "$HOME/.local/bin/dwl-startup.sh"
+  status=$?
+  printf '[%s] dwl exited (%s)\n' "$(date '+%F %T')" "$status" >>"$LOGFILE"
+
+  [ "$status" -eq 0 ] && break
+  sleep 1
+done
+
+# Tear down the graphical session so user units stop cleanly on logout.
+if command -v systemctl >/dev/null 2>&1; then
+  systemctl --user stop graphical-session.target
+fi
