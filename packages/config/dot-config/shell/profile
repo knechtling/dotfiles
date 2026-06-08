@@ -23,6 +23,7 @@ export EDITOR="nvim"
 export TERMINAL="foot"
 export TERMINAL_PROG="foot"
 export BROWSER="firefox"
+export DIFFPROG=nvim
 
 # export GTK_THEME="Adwaita:dark"
 # ~/ Clean-up:

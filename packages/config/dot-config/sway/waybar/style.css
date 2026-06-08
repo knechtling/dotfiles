@@ -1,11 +1,11 @@
 /* ~/.config/sway/waybar/style.css
- * Minimal dark theme to match config.jsonc. Teal accent.
+ * Minimal dark theme. Catppuccin Mocha palette, teal accent.
  */
 
 * {
-    /* Symbols Nerd Font Mono is loaded LAST as a fallback that covers every
-     * nerd-font glyph, regardless of which text font is first.            */
-    font-family: "JetBrainsMono Nerd Font", "Inter", "Symbols Nerd Font Mono", sans-serif;
+    /* JetBrainsMono Nerd Font already includes the Symbols glyphs, so the
+     * Inter / sans-serif fallbacks are only used if JetBrainsMono is missing. */
+    font-family: "JetBrainsMono Nerd Font", "Inter", sans-serif;
     font-size: 12px;
     font-weight: 500;
     min-height: 0;
@@ -35,15 +35,13 @@ tooltip label { color: #cdd6f4; padding: 4px 6px; }
 #scratchpad,
 #window,
 #privacy,
-#mpd,
+#mpris,
 #idle_inhibitor,
 #systemd-failed-units,
 #bluetooth,
 #network,
-#cpu,
-#memory,
-#disk,
-#temperature,
+#custom-system,
+#language,
 #pulseaudio,
 #tray,
 #clock {
@@ -76,7 +74,7 @@ tooltip label { color: #cdd6f4; padding: 4px 6px; }
 }
 
 /* ── Mode / scratchpad ──────────────────────────────────────────────────── */
-#mode      { color: #f9e2af; font-style: italic; }
+#mode       { color: #f9e2af; font-style: italic; }
 #scratchpad { color: #cba6f7; }
 
 /* ── Center window title ────────────────────────────────────────────────── */
@@ -84,30 +82,30 @@ tooltip label { color: #cdd6f4; padding: 4px 6px; }
 window#waybar.empty #window { background: transparent; }
 
 /* ── Right side: per-module accents ─────────────────────────────────────── */
-#privacy             { color: #f38ba8; }
-#mpd                 { color: #cba6f7; }
-#idle_inhibitor      { color: #f9e2af; }
+#privacy                  { color: #f38ba8; }
+#mpris                    { color: #cba6f7; }
+#idle_inhibitor           { color: #f9e2af; }
 #idle_inhibitor.activated { color: #fab387; }
-#systemd-failed-units { color: #f38ba8; }
+#systemd-failed-units     { color: #f38ba8; }
 
-#bluetooth.connected   { color: #89b4fa; }
+#bluetooth.connected      { color: #89b4fa; }
 #bluetooth.disabled,
-#bluetooth.off         { color: #6c7086; }
+#bluetooth.off            { color: #6c7086; }
 
-#network               { color: #94e2d5; }
+#network                  { color: #94e2d5; }
 #network.disconnected,
-#network.linked        { color: #f38ba8; }
+#network.linked           { color: #f38ba8; }
 
-#cpu                   { color: #89b4fa; }
-#memory                { color: #cba6f7; }
-#disk                  { color: #f5c2e7; }
-#temperature           { color: #fab387; }
-#temperature.critical  { color: #f38ba8; }
+/* Combined CPU / mem / temp module — color shifts by thermal class */
+#custom-system            { color: #89b4fa; }
+#custom-system.warning    { color: #f9e2af; }
+#custom-system.critical   { color: #f38ba8; }
 
-#pulseaudio            { color: #94e2d5; }
-#pulseaudio.muted      { color: #6c7086; }
+#language                 { color: #b4befe; }
 
-#tray > .needs-attention { -gtk-icon-effect: highlight; }
+#pulseaudio               { color: #94e2d5; }
+#pulseaudio.muted         { color: #6c7086; }
 
-#clock                 { color: #cdd6f4; font-weight: 600; }
+#tray > .needs-attention  { -gtk-icon-effect: highlight; }
 
+#clock                    { color: #cdd6f4; font-weight: 600; }

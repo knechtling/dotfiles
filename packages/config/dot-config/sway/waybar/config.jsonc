@@ -14,19 +14,18 @@
     "sway/scratchpad"
   ],
   "modules-center": [
+    "mpris",
     "sway/window"
   ],
   "modules-right": [
-    "privacy",
-    "mpd",
+    // "privacy",
+    "custom/swaync",
     "idle_inhibitor",
     "systemd-failed-units",
-    "bluetooth",
+    // "bluetooth",
     "network",
-    "cpu",
-    "memory",
-    "disk",
-    "temperature",
+    "custom/system",
+    "sway/language",
     "pulseaudio",
     "tray",
     "clock"
@@ -57,11 +56,19 @@
     "format": "{title}",
     "max-length": 60,
     "tooltip": false,
-    // Optional: prefix common apps with an icon; trim long suffixes.
+    // Prefix common apps with an icon; trim long suffixes.
     "rewrite": {
       "(.*) — Mozilla Firefox": "󰈹  $1",
       "(.*) - Visual Studio Code": "󰨞  $1",
-      "(.*) — foot": "  $1"
+      "(.*) — foot": "  $1",
+      "(.*) - Chromium": "  $1",
+      "(.*) - Discord": "󰙯  $1",
+      "(.*) - Thunderbird": "  $1",
+      "(.*) - Spotify": "  $1",
+      "(.*) - Obsidian": "󰂺  $1",
+      "(.*) - Slack": "  $1",
+      "(.*) - Signal": "  $1",
+      "(.*) - mpv": "  $1"
     }
   },
   // ── Right ────────────────────────────────────────────────────────────────
@@ -82,21 +89,30 @@
       }
     ]
   },
-  "mpd": {
-    "interval": 5,
-    "max-length": 40,
-    "format": "  {stateIcon} {title} — {artist}",
-    "format-paused": "  {title} — {artist}",
-    "format-stopped": "",
-    "format-disconnected": "",
-    "state-icons": {
-      "playing": "",
-      "paused": ""
+  "mpris": {
+    "interval": 2,
+    "format": "{player_icon} {dynamic}",
+    "format-paused": "{status_icon} <i>{dynamic}</i>",
+    "dynamic-len": 40,
+    "dynamic-order": [
+      "title",
+      "artist"
+    ],
+    "dynamic-separator": " — ",
+    "player-icons": {
+      "default": "",
+      "spotify": "",
+      "firefox": "󰈹",
+      "chromium": "",
+      "mpv": ""
     },
-    "tooltip-format": "MPD ({songPosition}/{queueLength}) — {elapsedTime:%M:%S} / {totalTime:%M:%S}",
-    "on-click": "mpc toggle",
-    "on-scroll-up": "mpc next",
-    "on-scroll-down": "mpc prev"
+    "status-icons": {
+      "playing": "",
+      "paused": "",
+      "stopped": ""
+    },
+    "ignored-players": [],
+    "tooltip-format": "{player} ({status})\n{title}\n{artist} — {album}"
   },
   "idle_inhibitor": {
     "format": "{icon}",
@@ -136,32 +152,19 @@
     "on-click": "foot -- nmtui",
     "on-click-right": "nm-connection-editor"
   },
-  "cpu": {
-    "interval": 3,
-    "format": "  {usage}%",
-    "tooltip-format": "{avg_frequency} GHz",
+  // Combined CPU / memory / temperature into one module.
+  // Reads /proc/stat, /proc/meminfo, and a thermal sensor.
+  // If temp picks the wrong sensor, edit the awk path below or replace
+  // with a fixed hwmon path (e.g. /sys/class/hwmon/hwmon2/temp1_input).
+  "custom/system": {
+    "exec": "awk 'BEGIN{ while(1){ getline line < \"/proc/stat\"; close(\"/proc/stat\"); split(line,a,\" \"); total=a[2]+a[3]+a[4]+a[5]+a[6]+a[7]+a[8]; idle=a[5]; if(prev_total){ dt=total-prev_total; di=idle-prev_idle; cpu = (dt>0) ? int((dt-di)*100/dt) : 0 } prev_total=total; prev_idle=idle; mem_total=0; mem_avail=0; while((getline mline < \"/proc/meminfo\")>0){ if(mline ~ /^MemTotal:/){ split(mline,m,\" \"); mem_total=m[2] } else if(mline ~ /^MemAvailable:/){ split(mline,m,\" \"); mem_avail=m[2]; break } } close(\"/proc/meminfo\"); mem_used_pct = (mem_total>0) ? int((mem_total-mem_avail)*100/mem_total) : 0; temp=0; cmd=\"cat /sys/class/thermal/thermal_zone*/temp 2>/dev/null | sort -n | tail -1\"; cmd | getline temp_raw; close(cmd); temp = (temp_raw>0) ? int(temp_raw/1000) : 0; printf \"{\\\"text\\\":\\\"  %d%%   %d%%   %d°C\\\",\\\"tooltip\\\":\\\"CPU: %d%%\\\\nMemory: %d%%\\\\nTemperature: %d°C\\\",\\\"class\\\":\\\"%s\\\"}\\n\", cpu, mem_used_pct, temp, cpu, mem_used_pct, temp, (temp>80 ? \"critical\" : (temp>70 ? \"warning\" : \"normal\")); fflush(); system(\"sleep 3\") } }'",
+    "return-type": "json",
     "on-click": "foot -- btop"
   },
-  "memory": {
-    "interval": 5,
-    "format": "  {percentage}%",
-    "tooltip-format": "{used:0.1f} / {total:0.1f} GiB ({percentage}%)\nSwap: {swapUsed:0.1f} / {swapTotal:0.1f} GiB",
-    "on-click": "foot -- btop"
-  },
-  "disk": {
-    "interval": 30,
-    "path": "/",
-    "format": "󰋊  {percentage_used}%",
-    "tooltip-format": "{used} / {total} used on {path}"
-  },
-  "temperature": {
-    // If this picks the wrong sensor, run:
-    //   for f in /sys/class/hwmon/*/temp*_input; do echo "$f $(<$f)"; done
-    // and set:  "hwmon-path": "/sys/class/hwmon/hwmonX/tempY_input"
-    "critical-threshold": 80,
-    "format": "  {temperatureC}°C",
-    "format-critical": "  {temperatureC}°C",
-    "tooltip": false
+  "sway/language": {
+    "format": "  {short}",
+    "tooltip-format": "{long}",
+    "on-click": "swaymsg input type:keyboard xkb_switch_layout next"
   },
   "pulseaudio": {
     "format": "{icon}  {volume}%",
@@ -190,6 +193,13 @@
     "icon-size": 14,
     "reverse-direction": false
   },
+  "custom/swaync": {
+    "exec": "swaync-client -swb",
+    "return-type": "json",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true
+  },
   "clock": {
     "interval": 60,
     "format": "  {:%a %d.%m.  %H:%M}",
@@ -202,20 +212,22 @@
       "weeks-pos": "left",
       "on-scroll": 1,
       "format": {
-        "months": "<span color='#ffeead'><b>{}</b></span>",
-        "days": "<span color='#ecc6d9'>{}</span>",
-        "weeks": "<span color='#99ffdd'><b>W{}</b></span>",
-        "weekdays": "<span color='#ffcc66'><b>{}</b></span>",
-        "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
+        "months": "<span color='#f9e2af'><b>{}</b></span>",
+        "days": "<span color='#cdd6f4'>{}</span>",
+        "weeks": "<span color='#94e2d5'><b>W{}</b></span>",
+        "weekdays": "<span color='#fab387'><b>{}</b></span>",
+        "today": "<span color='#f38ba8'><b><u>{}</u></b></span>"
       }
     },
     "actions": {
       "on-click": "mode",
       "on-scroll-up": "shift_up",
       "on-scroll-down": "shift_down"
-    }
+    },
   }
   // ── Optional modules (uncomment + add to modules-* to enable) ───────────
+  //
+  // Laptop-only:
   //
   // "battery": {
   //   "states": { "good": 95, "warning": 30, "critical": 15 },
@@ -242,18 +254,6 @@
   //     "balanced":    "",
   //     "power-saver": ""
   //   }
-  // },
-  //
-  // "keyboard-state": {
-  //   "numlock": true,
-  //   "capslock": true,
-  //   "format": "{name} {icon}",
-  //   "format-icons": { "locked": "", "unlocked": "" }
-  // },
-  //
-  // "sway/language": {
-  //   "format": "  {short} {variant}",
-  //   "on-click": "swaymsg input type:keyboard xkb_switch_layout next"
   // },
   //
   // "custom/power": {
