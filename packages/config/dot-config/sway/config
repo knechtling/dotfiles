@@ -221,6 +221,9 @@ mode "resize" {
 }
 bindsym $mod+x mode "resize"
 
+exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK
+exec systemctl --user start graphical-session.target
+
 ### Bar ---------------------------------------------------------------------
 bar {
     swaybar_command waybar
@@ -229,7 +232,7 @@ bar {
 ### Autostart ---------------------------------------------------------------
 
 # Notification daemon.
-exec_always swaync
+exec swaync
 
 # Clipboard history.
 exec_always sh -c 'pgrep -f "wl-paste --watch cliphist store" >/dev/null || wl-paste --watch cliphist store'
