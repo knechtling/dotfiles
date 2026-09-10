@@ -249,9 +249,6 @@ exec_always swayosd-server
 # Arch-update tray icon.
 exec_always arch-update --tray
 
-# For better walker startup times
-exec_always walker --gapplication-service
-
 exec_always nm-applet
 exec_always blueman-applet
 

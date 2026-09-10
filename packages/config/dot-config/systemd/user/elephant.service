@@ -1,8 +1,6 @@
 
 [Unit]
 Description=Elephant
-After=graphical-session.target
-Wants=graphical-session.target
 
 [Service]
 Type=simple
