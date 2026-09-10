@@ -1,0 +1,33 @@
+[mgr]
+show_hidden = false
+show_symlink = true
+sort_by = "natural"
+sort_dir_first = true
+linemode = "size"
+
+[preview]
+wrap = "no"
+tab_size = 4
+max_width = 1920
+max_height = 1080
+image_delay = 50
+image_filter = "triangle"
+image_quality = 80
+
+[tasks]
+image_alloc = 268435456
+image_bound = [ 8192, 8192 ]
+
+[opener]
+kitty-image = [
+  { run = 'kitten icat --hold -- %s', desc = "View in Kitty", block = true, for = "unix" },
+]
+kitty-video = [
+  { run = 'mpv --vo=kitty --vo-kitty-use-shm=yes --profile=sw-fast --really-quiet -- %s', desc = "Play in Kitty", block = true, for = "unix" },
+]
+
+[open]
+prepend_rules = [
+  { mime = "image/*", use = "kitty-image" },
+  { mime = "video/*", use = "kitty-video" },
+]

@@ -1,0 +1,8 @@
+[mgr]
+prepend_keymap = [
+  { on = "<Enter>", run = "open --hovered", desc = "Enter directory or open file" },
+  { on = "O", run = "open --interactive", desc = "Open with…" },
+  { on = "Z", run = "shell 'yazi-zshz' --block", desc = "Jump using Zsh-z history" },
+  { on = [ "g", "p" ], run = "cd ~/Pictures", desc = "Go to Pictures" },
+  { on = [ "g", "d" ], run = "cd ~/Downloads", desc = "Go to Downloads" },
+]

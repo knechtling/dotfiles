@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# Select from the live Zsh-z database and tell the current Yazi instance to cd.
+datafile=${ZSHZ_DATA:-${_Z_DATA:-$HOME/.z}}
+[ -r "$datafile" ] || exit 0
+
+now=$(date +%s)
+target=$(
+	awk -F '|' -v now="$now" '
+		NF == 3 {
+			age = now - $3
+			factor = age < 3600 ? 4 : age < 86400 ? 2 : age < 604800 ? 0.5 : 0.25
+			printf "%.6f\t%s\n", $2 * factor, $1
+		}
+	' "$datafile" |
+	sort -t "$(printf '\t')" -k1,1nr |
+	cut -f2- |
+	while IFS= read -r dir; do [ -d "$dir" ] && printf '%s\n' "$dir"; done |
+	fzf --height=80% --layout=reverse --border --prompt='Zsh-z> '
+) || exit 0
+
+[ -n "$target" ] && ya emit cd --str "$target"
