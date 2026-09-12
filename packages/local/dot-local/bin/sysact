@@ -68,7 +68,7 @@ case "$choice" in
   fi
   ;;
 '🐻 hibernate')
-  $ctl hibernate -i
+  $ctl hibernate
   need_cmd waylock
   waylock
   ;;
@@ -77,8 +77,8 @@ case "$choice" in
   need_cmd waylock
   waylock
   ;;
-'🔃 reboot') $ctl reboot -i ;;
-'🖥️shutdown') $ctl poweroff -i ;;
+'🔃 reboot') $ctl reboot ;;
+'🖥️ shutdown') $ctl poweroff ;;
 # '📺 display off') xset dpms force off ;;
 *) exit 1 ;;
 esac
