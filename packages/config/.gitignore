@@ -3,3 +3,7 @@ dot-config/pulse/
 dot-config/ibus/
 dot-config/nvim/.nvimlog
 dot-config/tmux/plugins/
+dot-config/kitty/kitty.conf.bak
+dot-config/kitty/strace_log.txt
+dot-config/kitty/remote/
+dot-config/kitty/staging/
