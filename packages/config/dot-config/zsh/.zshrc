@@ -25,20 +25,34 @@ SAVEHIST=10000000
 HISTFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/history"
 setopt extended_history
 setopt share_history
-setopt hist_ignore_all_dups
+setopt append_history
 setopt hist_ignore_space
 setopt hist_reduce_blanks
 
+# Load profile first so all env vars are ready
+[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/profile" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/profile"
 # Load aliases and shortcuts if existent.
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/shortcutrc"
-[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/profile" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/profile"
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/zshnameddirrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/zshnameddirrc"
+# Load functions
+for f in "${XDG_CONFIG_HOME:-$HOME/.config}/shell/functions/"*(N); do source "$f"; done
+
+ZINIT_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/zsh/.zinit/bin"
+if [[ -s "$ZINIT_HOME/zinit.zsh" ]]; then
+	source "$ZINIT_HOME/zinit.zsh"
+	zinit light zsh-users/zsh-completions
+fi
 
 # Basic auto/tab complete:
 autoload -U compinit
 zstyle ':completion:*' menu select
 zmodload zsh/complist
-compinit
+ZSH_COMPDUMP="${ZDOTDIR:-$HOME}/.zcompdump"
+if [[ -n "$ZSH_COMPDUMP"(#qN.mh+24) ]]; then
+	compinit -d "$ZSH_COMPDUMP"
+else
+	compinit -C -d "$ZSH_COMPDUMP"
+fi
 _comp_options+=(globdots)		# Include hidden files.
 
 # vi mode
@@ -68,17 +82,8 @@ zle -N zle-line-init
 echo -ne '\e[5 q' # Use beam shape cursor on startup.
 preexec() { echo -ne '\e[5 q' ;} # Use beam shape cursor for each new prompt.
 
-# Use lf to switch directories and bind it to ctrl-g
-lfcd () {
-    tmp="$(mktemp -uq)"
-    trap 'rm -f $tmp >/dev/null 2>&1 && trap - HUP INT QUIT TERM PWR EXIT' HUP INT QUIT TERM PWR EXIT
-    lfub -last-dir-path="$tmp" "$@"
-    if [ -f "$tmp" ]; then
-        dir="$(cat "$tmp")"
-        [ -d "$dir" ] && [ "$dir" != "$(pwd)" ] && cd "$dir"
-    fi
-}
-bindkey -s '^g' '^ulfcd\n'
+# Use yazi to switch directories and bind it to ctrl-g
+bindkey -s '^g' '^uy\n'
 
 bindkey '^[[P' delete-char
 
@@ -175,23 +180,46 @@ fpath=(~/.config/zsh/ $fpath)
 
 ## Load plugins; should be last.
 
-# xc manager
-XC_MANAGER="/usr/share/zsh/plugins/xc-manager/xc.plugin.zsh"
-[[ -s "$XC_MANAGER" ]] && source "$XC_MANAGER" || echo "Error: Unable to source $XC_MANAGER, file not found!"
-# Fast Syntax Highlighting
-F_SH_PLUGIN="/usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
-[ -s "$F_SH_PLUGIN" ] && source "$F_SH_PLUGIN" || echo "Error: Unable to source $F_SH_PLUGIN, file not found!"
-# Zsh Autosuggestions
-ZSH_AUTOSUGGESTIONS_PLUGIN="/usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
-[ -s "$ZSH_AUTOSUGGESTIONS_PLUGIN" ] && source "$ZSH_AUTOSUGGESTIONS_PLUGIN" || echo "Error: Unable to source $ZSH_AUTOSUGGESTIONS_PLUGIN, file not found!"
-# Zsh History Substring Search
-ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN="/usr/share/zsh/plugins/zsh-fzf-history-search/zsh-fzf-history-search.plugin.zsh"
-[ -s "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" ] && source "$ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN" || echo "Error: Unable to source $ZSH_HISTORY_SUBSTRING_SEARCH_PLUGIN, file not found!"
-# Autojump
-AUTOJUMP_PLUGIN="/usr/share/autojump/autojump.zsh"
-[[ -s "$AUTOJUMP_PLUGIN" ]] && source "$AUTOJUMP_PLUGIN" || echo "Error: Unable to source autojump.zsh, file not found!"
-# FZF History Search
-FZF_HISTORY_PLUGIN="/usr/share/zsh/plugins/zsh-fzf-history-search/zsh-fzf-history-search.plugin.zsh"
-[[ -s "$FZF_HISTORY_PLUGIN" ]] && source "$FZF_HISTORY_PLUGIN" || echo "Error: Unable to source $FZF_HISTORY_PLUGIN, file not found!"
+if [[ -s "$ZINIT_HOME/zinit.zsh" ]]; then
+	zinit light Aloxaf/fzf-tab
+
+	ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+	zinit light zsh-users/zsh-autosuggestions
+	zinit light agkozak/zsh-z
+	zinit light joshskidmore/zsh-fzf-history-search
+	zinit light sunlei/zsh-ssh
+
+	# Extend zsh-ssh's fzf picker to wrapped SSH commands while preserving
+	# the command form the user typed.
+	functions[_fzf_complete_ssh_bare]=$functions[fzf_complete_ssh]
+	_set_lbuffer() {
+		local result="$1" is_fzf_result="$2" selected_host
+		if [[ "$is_fzf_result" == false ]]; then
+			result=$(cut -f 1 -d '|' <<< "$result")
+		fi
+		selected_host=$(cut -f 1 -d ' ' <<< "$result")
+		LBUFFER="${_fzf_ssh_command_prefix:-ssh }${selected_host}"
+	}
+	fzf_complete_ssh() {
+		_fzf_ssh_command_prefix='ssh '
+		case "$LBUFFER" in
+			(tsocks\ kitten\ ssh*) _fzf_ssh_command_prefix='tsocks kitten ssh '; LBUFFER="ssh ${LBUFFER#tsocks kitten ssh}" ;;
+			(tsocks\ kssh*)       _fzf_ssh_command_prefix='tsocks kssh ';       LBUFFER="ssh ${LBUFFER#tsocks kssh}" ;;
+			(tsocks\ ssh*)        _fzf_ssh_command_prefix='tsocks ssh ';        LBUFFER="${LBUFFER#tsocks }" ;;
+			(kitten\ ssh*)        _fzf_ssh_command_prefix='kitten ssh ';        LBUFFER="ssh ${LBUFFER#kitten ssh}" ;;
+			(kssh*)               _fzf_ssh_command_prefix='kssh ';              LBUFFER="ssh ${LBUFFER#kssh}" ;;
+		esac
+		_fzf_complete_ssh_bare
+		unset _fzf_ssh_command_prefix
+	}
+	zle -N fzf_complete_ssh
+	bindkey '^I' fzf_complete_ssh
+	zinit light zdharma-continuum/fast-syntax-highlighting
+else
+	print -u2 "Zinit not found at $ZINIT_HOME"
+fi
+
+compdef _precommand tsocks
+compdef _ssh kssh
 # Load aliases
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shell/aliasrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shell/aliasrc"

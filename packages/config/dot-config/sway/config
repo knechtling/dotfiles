@@ -16,6 +16,7 @@ set $filemanager     nautlilus
 input "type:keyboard" {
     xkb_layout de
     xkb_model  pc105
+    xkb_variant nodeadkeys
     xkb_options caps:escape
     repeat_rate  25
     repeat_delay 600
@@ -222,7 +223,7 @@ mode "resize" {
 bindsym $mod+x mode "resize"
 
 exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK
-exec systemctl --user start graphical-session.target
+exec systemctl --user start sway-session.target
 
 ### Bar ---------------------------------------------------------------------
 bar {
