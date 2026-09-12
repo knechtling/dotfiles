@@ -1,0 +1,48 @@
+                  _
+ _   _  __ _ _____(_)
+| | | |/ _` |_  / | |
+| |_| | (_| |/ /| | |
+ \__, |\__,_/___|_|_|
+ |___/
+
+Yazi terminal file manager shortcuts.
+
+Navigation
+	j / k or down / up - Move through files
+	h or left - Parent directory
+	l or right - Enter directory
+	enter - Enter directory or open the hovered file
+	g p - Go to ~/Pictures
+	g d - Go to ~/Downloads
+	z - Find a file below the current directory with fzf
+	Z - Jump using the current ~/.z Zsh-z history
+	/ - Find by name in the current directory
+	f - Filter the current file list
+	tab - Show detailed information for the hovered file
+
+Opening and previews
+	enter on an image - View it inside Kitty with icat
+	enter on a video - Play it inside Kitty with mpv
+	O - Interactive Open with menu
+	J / K - Seek down/up in the preview
+
+File operations
+	space - Select/unselect the hovered file
+	v - Enter visual selection mode
+	y - Copy selected files
+	x - Cut selected files
+	p - Paste copied/cut files
+	r - Rename
+	a - Create a file or directory (trailing / creates a directory)
+	d - Move selected files to trash
+	D - Permanently delete selected files
+	. - Toggle hidden files
+
+Shell and exit
+	; - Run a shell command
+	: - Run a shell command and block
+	q - Quit and cd the shell to Yazi's current directory
+	Q - Quit without changing the shell directory
+	ctrl+g or command `y` - Launch Yazi
+	F1 or ~ - Show Yazi help
+	yazi --debug - Show terminal/image adapter diagnostics

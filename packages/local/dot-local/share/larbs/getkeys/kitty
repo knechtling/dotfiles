@@ -1,0 +1,53 @@
+ _    _ _   _
+| | _(_) |_| |_ _   _
+| |/ / | __| __| | | |
+|   <| | |_| |_| |_| |
+|_|\_\_|\__|\__|\__, |
+                 |___/
+
+Kitty terminal shortcuts and helpers.
+
+Shell integration
+	ctrl+shift+g - Open the last command output in Neovim
+	ctrl+shift+s - Browse/search scrollback with kitty-scrollback.nvim
+	ctrl+shift+z / ctrl+shift+x - Jump to previous/next shell prompt
+	right-click command output - Select that command's complete output
+	clone-in-kitty - Clone the current shell, directory and environment
+	clone-in-kitty --type=tab - Clone the current shell into a tab
+	edit-in-kitty FILE - Edit a file in a separate Kitty window
+	kitten run-shell - Start a nested shell with Kitty integration
+	kitten ssh HOST - SSH with terminfo and shell integration
+	kssh HOST - Short alias for kitten ssh
+	kitten transfer FILE DEST - Transfer files through an SSH terminal
+	edit-in-kitty FILE - Edit a remote file locally and sync it back
+
+Windows, tabs and layouts
+	ctrl+shift+enter - New pane in the current directory
+	ctrl+shift+t - New tab in the current directory
+	ctrl+shift+h/j/k/l - Focus pane left/down/up/right
+	ctrl+shift+backslash - Cycle layouts
+	ctrl+shift+f10 - Maximize/restore the active pane
+	ctrl+shift+right / ctrl+shift+left - Next/previous tab
+	ctrl+shift+r - Enter pane resize mode
+
+Hints and selection
+	ctrl+shift+e - Select and open a visible URL
+	ctrl+shift+p, then f - Select a visible path
+	ctrl+shift+p, then l - Select a visible line
+	ctrl+shift+p, then w - Select a visible word
+	ctrl+shift+p, then y - Open a visible terminal hyperlink
+	ctrl+shift+u - Unicode and emoji picker
+
+Configuration and tools
+	ctrl+shift+f2 - Edit kitty.conf
+	ctrl+shift+f5 - Reload kitty.conf
+	ctrl+shift+f6 - Show config errors/debug information
+	ctrl+shift+plus / ctrl+shift+minus - Increase/decrease font size
+	kitten themes - Interactive theme selector
+	kitten icat IMAGE - Display an image in the terminal
+	icat IMAGE - Short alias for kitten icat
+	knotify COMMAND... - Run a command and notify when it finishes
+	kcopy / kpaste - Write/read the desktop clipboard through Kitty
+	kitten quick-access-terminal - Toggle Kitty's native dropdown terminal
+	kitty --session ~/.config/kitty/sessions/work.conf - Start the work session
+	kitten @ --to unix:@kitty ls - Inspect Kitty through its control socket

@@ -1,0 +1,84 @@
+     _          _
+  __| |_      _| |
+ / _` \ \ /\ / / |
+| (_| |\ V  V /| |
+ \__,_| \_/\_/ |_|
+
+dwl (dwl-forge) is the Wayland window manager.
+	super+d - Open app launcher (walker)
+	super+return - Open terminal
+	super+shift+return - Toggle scratchpad terminal
+	super+shift+p - Toggle scratchpad (Bitwarden)
+	super+shift+w - Toggle scratchpad (nmtui, floating)
+	super+b - Toggle status bar
+	ctrl_r - Show keybind cheatsheet (wlr-which-key)
+	super+c - Open clipboard history (cliphist)
+	super+backspace - Open system action menu (sysact)
+	super+F3 - Select display layout (displayselect)
+	super+alt+u - Open URL/file handler menu (dmenuhandler)
+	super+alt+m - Mount a CIFS share (dmenumountcifs)
+	super+alt+w - Launch a web app (weblaunch)
+	super+alt+p - Pick a screenshot region/window (maimpick-wl)
+	super+alt+r - Toggle screen/audio recording (dmenurecord)
+	super+F4 - Open volume mixer (pulsemixer)
+	super+F7 - Open unicode/emoji picker
+	super+i - Install a package (pkg-install)
+	super+shift+r - Remove a package (pkg-remove)
+	super+shift+c - Launch WhatsApp Web
+	super+F1 - Open desktop app launcher (j4-dmenu-desktop)
+	super+plus - Raise volume 5%
+	super+shift+plus - Raise volume 15%
+	super+w - Open browser
+	super+z - Open music player
+	super+e - Open email client
+	super+r - Open file manager (lfub)
+	super+shift+h - Open htop
+	super+shift+y - Search YouTube (ytfzf)
+	super+n - Open wiki index (nvim)
+	Fn+F7 (emoji key) - Open unicode/emoji picker
+	Fn+F8 (screen capture key) - Take a region screenshot
+	Fn+F6 (dictation key) - Toggle screen/audio recording
+	Fn+F10 (search key) - Open app launcher
+	super+F8 / super+s - Take a screenshot
+	audio mute key - Toggle output mute
+	mic mute key - Toggle input mute
+	volume up/down keys - Adjust output volume 3%
+	media prev/next/play/pause/stop keys - Control player (playerctl)
+	brightness up/down keys - Adjust screen brightness 15%
+	super+j/k - Focus next/prev window in stack
+	super+shift+i/d - Increase/decrease number of master windows
+	super+h/l - Shrink/grow master area
+	super+space - Zoom selected window to/from master area
+	super+tab - Switch to previously selected tags
+	super+g - Toggle gaps
+	super+q - Close focused window
+	super+shift+f - Toggle floating on focused window
+	super+t - Tiled layout
+	super+f - Floating layout
+	super+m - Monocle layout
+	super+o - Window switcher menu
+	super+alt+o - Layout switcher menu
+	super+[1-9] - View tag
+	super+ctrl+[1-9] - Toggle view tag
+	super+shift+[1-9] - Send window to tag
+	super+ctrl+shift+[1-9] - Toggle tag on window
+	super+0 - View all tags
+	super+v - View only tags of focused window
+	super+shift+= - Send window to all tags
+	super+, / super+. - Focus prev/next monitor
+	super+< / super+> - Send window to prev/next monitor
+	super+shift+< / super+shift+> - Send all tagged windows to prev/next monitor
+	super+shift+, / super+shift+. - Send window to prev/next monitor
+	super+shift+q - Quit dwl
+	left-click layout symbol - Tiled layout
+	right-click layout symbol - Monocle layout
+	super+left-drag window - Move window
+	super+middle-click window - Toggle floating
+	super+right-drag window - Resize window
+	left-click tag - View tag
+	right-click tag - Toggle view tag
+	super+left-click tag - Send window to tag
+	super+right-click tag - Toggle tag on window
+	left-click tray icon - Activate tray item
+	right-click tray icon - Open tray item menu
+	left/middle/right-click status module - Run module's click command (statuscmd)
