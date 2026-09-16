@@ -22,7 +22,9 @@ New shells preserve their requested working directory. `cdr` explicitly restores
 the last saved directory. `knotify command ...` returns the command's exit code.
 
 Kitty is the default local terminal. Ctrl-Shift-Enter opens a window in the current
-directory; Ctrl-Shift-t opens a tab. Use tmux for persistent work or on remote
+directory; Ctrl-Shift-t opens a tab. Ctrl-Shift-h/j/k/l move between panes as the
+tmux bindings did, so layout cycling moves to Ctrl-Shift-backslash and scrolling
+to Ctrl-Shift-Up/Down. `getkeys kitty` lists the full set. Use tmux for persistent work or on remote
 hosts. Kitty's scrollback pager uses a minimal Neovim session. SSH remote-control
 forwarding remains disabled. Clipboard reads retain Kitty's confirmation prompt.
 
