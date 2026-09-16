@@ -3,13 +3,15 @@ clone the repository
 
 `cd dotfiles`
 
-`stow -d /home/anton/dotfiles/packages -t /home/anton --dotfiles --no-folding --[stow|restow|delete] config local shell`
+Run `make dry-run`, resolve reported conflicts, then `make install`.
+See [WORKFLOW.md](WORKFLOW.md) for terminal/editor keys, dependencies and validation.
 
 ## Package layout
 
 - `config`: files under `~/.config` (app/tool configuration).
 - `local`: files under `~/.local` (mostly user scripts/assets meant to be shared).
 - `shell`: top-level shell dotfiles (currently `~/.zshenv`).
+- `nvim-native`: standalone native Neovim profile and plugin lockfile.
 
 ## Add a new config (stow + git workflow)
 
@@ -17,7 +19,7 @@ clone the repository
 2. Copy only stable config files into stow source: `packages/config/dot-config/myapp/`.
 3. Add volatile patterns to `packages/config/.gitignore` (`cache/`, `state/`, `*.log`, plugin dirs, etc.).
 4. Restow:
-   `stow -d /home/anton/dotfiles/packages -t /home/anton --dotfiles --no-folding --restow config`
+   `stow -d "$HOME/dotfiles/packages" -t "$HOME" --dotfiles --no-folding --restow config`
 5. Verify links and runtime behavior:
    - config file should be symlinked from `~/.config/...` to `packages/config/...`
    - runtime files should land in `~/.cache`, `~/.local/state`, or `~/.local/share`, not in this repo
