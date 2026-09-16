@@ -27,7 +27,10 @@ tmux bindings did, so layout cycling moves to Ctrl-Shift-backslash and scrolling
 to Ctrl-Shift-Up/Down. The mouse side buttons resize the active pane (add
 Shift for vertical) and Ctrl-right-click opens the resize mode; kitty has no
 drag-to-resize borders. `getkeys kitty` lists the full set. Use tmux for persistent work or on remote
-hosts. Kitty's scrollback pager uses a minimal Neovim session. SSH remote-control
+hosts. Ctrl-Shift-s browses the scrollback in Neovim and Ctrl-Shift-g the last
+command's output, both through kitty-scrollback.nvim, which is pinned to v7.0.0
+because Debian ships kitty 0.41.1. scrollback_pager stays less -R: a plain Neovim
+buffer renders ANSI escapes literally. SSH remote-control
 forwarding remains disabled. Clipboard reads retain Kitty's confirmation prompt.
 
 ## tmux (prefix Ctrl-b)

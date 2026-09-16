@@ -12,6 +12,7 @@ Shell integration
 	ctrl+shift+s - Browse/search scrollback with kitty-scrollback.nvim
 	ctrl+shift+z / ctrl+shift+x - Jump to previous/next shell prompt
 	right-click command output - Select that command's complete output
+	ctrl+shift+right-click - Open the clicked command's output in Neovim
 	clone-in-kitty - Clone the current shell, directory and environment
 	clone-in-kitty --type=tab - Clone the current shell into a tab
 	edit-in-kitty FILE - Edit a file in a separate Kitty window
