@@ -69,6 +69,18 @@ Zinit and the declared shell/tmux plugins. NativeTools reports language tools;
 the existing Mason bin directory is used only as a fallback. Plugin versions
 are stored in nvim-pack-lock.json. NativeUpdate explicitly reviews updates.
 
+yazi is not packaged for Debian. Install the release binaries per host into
+~/.local/bin, which profile puts first on PATH:
+
+    v=26.9.1; t=x86_64-unknown-linux-gnu
+    curl -sSL -o /tmp/yazi.zip \
+      "https://github.com/sxyazi/yazi/releases/download/v$v/yazi-$t.zip"
+    unzip -qo /tmp/yazi.zip -d /tmp
+    install -m 755 /tmp/yazi-$t/{yazi,ya} ~/.local/bin/
+    install -m 644 /tmp/yazi-$t/completions/_{yazi,ya} ~/.config/zsh/
+
+The gnu build needs glibc >= 2.39; use the musl archive on older hosts.
+
 ## Verification after restart
 
 Open a Kitty window in a project, create tmux splits, and confirm pwd stays there.
