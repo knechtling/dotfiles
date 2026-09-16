@@ -29,6 +29,9 @@ Windows, tabs and layouts
 	ctrl+shift+f10 - Maximize/restore the active pane
 	ctrl+shift+right / ctrl+shift+left - Next/previous tab
 	ctrl+shift+r - Enter pane resize mode
+	side buttons 4/5 - Make the active pane narrower/wider
+	shift + side buttons 4/5 - Make the active pane shorter/taller
+	ctrl+right-click - Enter pane resize mode with the mouse
 
 Hints and selection
 	ctrl+shift+e - Select and open a visible URL
