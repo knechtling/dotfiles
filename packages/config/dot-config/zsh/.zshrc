@@ -16,7 +16,7 @@ PS1=$'%F{blue}%~%f %F{magenta}${vcs_info_msg_0_}%f %F{green}➜%f\u00A0'
 
 
 setopt autocd			# Automatically cd into typed directory.
-stty stop undef			# Disable ctrl-s to freeze terminal.
+[[ -t 0 ]] && stty stop undef	# Disable ctrl-s flow control on terminals.
 setopt interactive_comments
 
 # History in cache directory:
