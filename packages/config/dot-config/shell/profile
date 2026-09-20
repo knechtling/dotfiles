@@ -6,7 +6,12 @@
 # to clean up.
 
 # Adds `~/.local/bin` to $PATH
-export PATH="$PATH:${$(find ~/.local/bin/ -type d -printf %p:)%%:}"
+typeset -U path PATH
+path=("$HOME/.local/bin" "$HOME/.local/bin/statusbar" $path)
+export PATH
+
+# Needed before the host override below, which reads it.
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 
 unsetopt PROMPT_SP
 
@@ -20,14 +25,13 @@ fi
 
 # Default programs:
 export EDITOR="nvim"
-export TERMINAL="foot"
-export TERMINAL_PROG="foot"
+export TERMINAL="kitty"
+export TERMINAL_PROG="kitty"
 export BROWSER="firefox"
 export DIFFPROG=nvim
 
 # export GTK_THEME="Adwaita:dark"
 # ~/ Clean-up:
-export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
 export XINITRC="$XDG_CONFIG_HOME/x11/xinitrc"
@@ -68,10 +72,7 @@ export LESSHISTFILE="$XDG_CACHE_HOME"/less/history
 export MANPAGER="less"
 export SANE_DEFAULT_DEVICE="airscan:e0:Canon TR4700 series"
 #
-# Enable screen sharing for dwl
-export XDG_CURRENT_DESKTOP=wlroots
-export XDG_SESSION_TYPE=wayland
-export XDG_SESSION_DESKTOP=wlroots
+# Desktop identity is inherited from the graphical session, including over SSH.
 
 
 # Other program settings:

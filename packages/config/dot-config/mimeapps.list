@@ -32,10 +32,12 @@ x-scheme-handler/eclipse+command=_usr_lib_dbeaver_.desktop
 application/zip=org.gnome.FileRoller.desktop
 x-scheme-handler/eclipse+mpc=_usr_lib_papyrus_.desktop
 application/msword=onlyoffice-desktopeditors.desktop
-x-scheme-handler/jetbrains=jetbrains-toolbox.desktop
+x-scheme-handler/jetbrains=jetbrainsd.desktop
 application/x-wayland-gnome-saved-search=thunar.desktop
 text/plain=nvim.desktop
 x-scheme-handler/claude-cli=claude-code-url-handler.desktop
+x-scheme-handler/io.element.desktop=element-desktop.desktop
+x-scheme-handler/element=element-desktop.desktop
 
 [Added Associations]
 image/bmp=sxiv.desktop;

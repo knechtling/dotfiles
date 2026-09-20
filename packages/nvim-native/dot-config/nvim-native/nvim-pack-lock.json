@@ -1,0 +1,36 @@
+{
+  "plugins": {
+    "SchemaStore.nvim": {
+      "rev": "10c76a652d7b1a81bacf5449df76e6e83d367bff",
+      "src": "https://github.com/b0o/SchemaStore.nvim"
+    },
+    "conform.nvim": {
+      "rev": "016802de402556da54c36bd7359b441266b01cdd",
+      "src": "https://github.com/stevearc/conform.nvim"
+    },
+    "gitsigns.nvim": {
+      "rev": "5be654f2232c10ddcad19c1607a67b6b4b78fc29",
+      "src": "https://github.com/lewis6991/gitsigns.nvim"
+    },
+    "mini.pick": {
+      "rev": "360c1bb33610e030698d07ed15969ab4762dbcd6",
+      "src": "https://github.com/nvim-mini/mini.pick"
+    },
+    "nvim-lspconfig": {
+      "rev": "19576de1c1b6d1b5e231ea6ef9cba9a811c322bb",
+      "src": "https://github.com/neovim/nvim-lspconfig"
+    },
+    "tokyonight.nvim": {
+      "rev": "cdc07ac78467a233fd62c493de29a17e0cf2b2b6",
+      "src": "https://github.com/folke/tokyonight.nvim"
+    },
+    "which-key.nvim": {
+      "rev": "3aab2147e74890957785941f0c1ad87d0a44c15a",
+      "src": "https://github.com/folke/which-key.nvim"
+    },
+    "wiki.vim": {
+      "rev": "2864c6b7d0f76f7f3bdec7ba10ec9de3aeb1d308",
+      "src": "https://github.com/lervag/wiki.vim"
+    }
+  }
+}

@@ -30,7 +30,7 @@
 /* ── Base ───────────────────────────────────────────────────────────────── */
 * {
     font-family: "JetBrainsMono Nerd Font", "Inter", sans-serif;
-    font-size: 13px;
+    font-size: 22px;
     font-weight: 500;
     min-height: 0;
     border: none;
@@ -76,13 +76,14 @@ tooltip label { color: @text; padding: 4px 8px; }
 #temperature,
 #language,
 #tray,
-#clock {
+#clock,
+#custom-powermenu {
     background-color: @background;
     color: @on_surface;
     border-radius: 8px;
     border: 2px solid @border_color;
-    padding: 0px 10px;
-    margin: 1px 4px;
+    padding: 0px 12px;
+    margin: 3px 4px;
     transition: all 0.3s ease-out;
 }
 
@@ -155,7 +156,6 @@ tooltip label { color: @text; padding: 4px 8px; }
 /* ── Center ─────────────────────────────────────────────────────────────── */
 #window {
     color: @icon_color;
-    font-size: 13px;
 }
 
 window#waybar.empty #window {
@@ -183,7 +183,7 @@ window#waybar.empty #window {
 #network.linked                   { color: @red; border-color: @red; }
 
 /* System drawer */
-#custom-system-icon               { color: @blue; font-size: 15px; }
+#custom-system-icon               { color: @blue; font-size: 16px; }
 #cpu                              { color: @blue; }
 #memory                           { color: @mauve; }
 #temperature                      { color: @peach; }
@@ -197,3 +197,19 @@ window#waybar.empty #window {
 
 /* ── Clock ──────────────────────────────────────────────────────────────── */
 #clock { font-weight: 600; color: @text; margin-right: 0px; }
+
+/* ── Power menu ─────────────────────────────────────────────────────────── */
+#custom-powermenu {
+    color: @red;
+    font-size: 16px;
+    padding: 0px 12px;
+    margin-left: 4px;
+    margin-right: 0px;
+    border-color: @surface1;
+}
+
+#custom-powermenu:hover {
+    background: rgba(243, 139, 168, 0.15);
+    border-color: @red;
+    color: @red;
+}

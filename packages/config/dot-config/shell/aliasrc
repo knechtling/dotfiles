@@ -51,7 +51,7 @@ alias \
 	trem="transmission-remote" \
 	YT="youtube-viewer" \
 	sdn="shutdown -h now" \
-	e="$EDITOR" \
+	e="NVIM_APPNAME=nvim-native nvim" \
 	v="$EDITOR" \
 	p="pacman" \
 	xi="sudo xbps-install" \

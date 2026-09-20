@@ -4,12 +4,12 @@
 
 ### Variables
 set $mod      Mod4
-set $term     foot
+set $term     kitty
 set $menu     walker
 set $browser  firefox
 set $music    feishin
 set $mail     thunderbird
-set $filemanager     nautlilus
+set $filemanager     nautilus
 
 ### Input -------------------------------------------------------------------
 # German layout, caps:escape (matches dwl xkb_rules).
@@ -87,11 +87,13 @@ for_window [app_id="Bitwarden"]   floating enable, move scratchpad, resize set 8
 bindsym $mod+Return            exec $term
 bindsym $mod+d                 exec $menu
 bindsym $mod+F1                exec j4-dmenu-desktop
-bindsym $mod+c                 exec sh -c 'cliphist list | wmenu | cliphist decode | wl-copy'
+bindsym $mod+c                 exec sh -c 'cliphist list | walker -d | cliphist decode | wl-copy'
 bindsym $mod+BackSpace         exec sysact
 bindsym Control_R              exec wlr-which-key
 
 # -- scratchpads --
+bindsym $mod+Shift+minus       move scratchpad
+bindsym $mod+minus             scratchpad show
 bindsym $mod+Shift+Return      exec ~/.local/bin/sway-scratch term
 bindsym $mod+Shift+p           exec ~/.local/bin/sway-scratch bw
 bindsym $mod+Shift+w           exec ~/.local/bin/sway-scratch net
@@ -222,8 +224,10 @@ mode "resize" {
 }
 bindsym $mod+x mode "resize"
 
-exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK
+exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK DISPLAY
 exec systemctl --user start sway-session.target
+
+exec_always autotiling
 
 ### Bar ---------------------------------------------------------------------
 bar {
@@ -255,3 +259,5 @@ exec_always blueman-applet
 
 ### Drop-ins ----------------------------------------------------------------
 include ~/.config/sway/config.d/*
+include ~/.config/sway/outputs
+include ~/.config/sway/workspaces

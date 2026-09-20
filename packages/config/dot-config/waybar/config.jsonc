@@ -6,7 +6,7 @@
   "margin-bottom": 0,
   "margin-left": 0,
   "margin-right": 0,
-  "height": 24,
+  "height": 44,
   "spacing": 0,
   "reload_style_on_change": true,
   "modules-left": [
@@ -28,7 +28,8 @@
     "group/system",
     "sway/language",
     "tray",
-    "clock"
+    "clock",
+    "custom/powermenu"
   ],
   // ── Left ──────────────────────────────────────────────────────────────────
   "custom/appmenu": {
@@ -235,6 +236,11 @@
       "on-scroll-up": "shift_up",
       "on-scroll-down": "shift_down"
     }
+  },
+  "custom/powermenu": {
+    "format": "󰐥",
+    "on-click": "nwg-bar",
+    "tooltip": true
   }
   // ── Optional ───────────────────────────────────────────────────────────────
   // "battery": {

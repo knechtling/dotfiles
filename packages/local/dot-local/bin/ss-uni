@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Directory to save images
-DIR="/home/anton/vimwiki/images"
+DIR="$HOME/vimwiki/images"
 
 # Create directory if it doesn't exist
 mkdir -p "$DIR"
