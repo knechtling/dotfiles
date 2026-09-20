@@ -12,6 +12,7 @@ Shell integration
 	ctrl+shift+s - Browse/search scrollback with kitty-scrollback.nvim
 	ctrl+shift+z / ctrl+shift+x - Jump to previous/next shell prompt
 	right-click command output - Select that command's complete output
+	alt+a - Pick a past command's output from full scrollback and copy it
 	clone-in-kitty - Clone the current shell, directory and environment
 	clone-in-kitty --type=tab - Clone the current shell into a tab
 	edit-in-kitty FILE - Edit a file in a separate Kitty window
@@ -22,6 +23,19 @@ Shell integration
 	edit-in-kitty FILE - Edit a remote file locally and sync it back
 
 Windows, tabs and layouts
+	ctrl+b - Enter tmux-compatible prefix mode
+	ctrl+b c / & - New/close tab (tmux window)
+	ctrl+b n / p / b - Next/previous/last-used tab
+	ctrl+b 1..9 - Select tab by number
+	ctrl+b , / < / > - Rename/move tab left/move tab right
+	ctrl+b % or | / " or - - Split left-right/top-bottom
+	ctrl+b h/j/k/l - Focus pane left/down/up/right
+	ctrl+b H/J/K/L - Resize pane by five cells
+	ctrl+b x / z - Close/maximize active pane
+	ctrl+b o / ; / q - Next/last-used/visually select pane
+	ctrl+b space - Cycle tmux-style preset pane layouts
+	ctrl+b alt+1..7 - Select a tmux-style preset pane layout
+	ctrl+b [ / ] - Browse scrollback/paste clipboard
 	ctrl+shift+enter - New pane in the current directory
 	ctrl+shift+t - New tab in the current directory
 	ctrl+shift+h/j/k/l - Focus pane left/down/up/right
