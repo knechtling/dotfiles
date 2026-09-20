@@ -12,7 +12,6 @@ Shell integration
 	ctrl+shift+s - Browse/search scrollback with kitty-scrollback.nvim
 	ctrl+shift+z / ctrl+shift+x - Jump to previous/next shell prompt
 	right-click command output - Select that command's complete output
-	alt+a - Pick a past command's output from full scrollback and copy it
 	clone-in-kitty - Clone the current shell, directory and environment
 	clone-in-kitty --type=tab - Clone the current shell into a tab
 	edit-in-kitty FILE - Edit a file in a separate Kitty window
@@ -24,22 +23,29 @@ Shell integration
 
 Windows, tabs and layouts
 	ctrl+b - Enter tmux-compatible prefix mode
+	ctrl+b ctrl+b - Send a literal ctrl+b to the program
 	ctrl+b c / & - New/close tab (tmux window)
 	ctrl+b n / p / b - Next/previous/last-used tab
 	ctrl+b 1..9 - Select tab by number
 	ctrl+b , / < / > - Rename/move tab left/move tab right
-	ctrl+b % or | / " or - - Split left-right/top-bottom
+	ctrl+b w / f / ' - Pick a tab from a list
+	ctrl+b % or | or \ / " or - or _ - Split left-right/top-bottom
 	ctrl+b h/j/k/l - Focus pane left/down/up/right
-	ctrl+b H/J/K/L - Resize pane by five cells
+	ctrl+b H/J/K/L - Resize pane by five cells (repeatable)
+	ctrl+b alt+arrows / ctrl+arrows - Resize pane by five/one cells (repeatable)
 	ctrl+b x / z - Close/maximize active pane
 	ctrl+b o / ; / q - Next/last-used/visually select pane
+	ctrl+b ! - Move the active pane into a new tab
+	ctrl+b { / } - Move the active pane backward/forward
 	ctrl+b space - Cycle tmux-style preset pane layouts
 	ctrl+b alt+1..7 - Select a tmux-style preset pane layout
 	ctrl+b [ / ] - Browse scrollback/paste clipboard
+	ctrl+b : / ? - Command palette/show this cheatsheet
+	ctrl+b R - Reload kitty.conf
 	ctrl+shift+enter - New pane in the current directory
 	ctrl+shift+t - New tab in the current directory
-	ctrl+shift+h/j/k/l - Focus pane left/down/up/right
-	ctrl+shift+backslash - Cycle layouts
+	ctrl+shift+[ / ] - Focus previous/next pane
+	ctrl+shift+l - Cycle layouts
 	ctrl+shift+f10 - Maximize/restore the active pane
 	ctrl+shift+right / ctrl+shift+left - Next/previous tab
 	ctrl+shift+r - Enter pane resize mode
@@ -51,6 +57,7 @@ Hints and selection
 	ctrl+shift+p, then w - Select a visible word
 	ctrl+shift+p, then y - Open a visible terminal hyperlink
 	ctrl+shift+u - Unicode and emoji picker
+	mouse selection - Copied to the clipboard automatically
 
 Configuration and tools
 	ctrl+shift+f2 - Edit kitty.conf
