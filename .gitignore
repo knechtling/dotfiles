@@ -3,3 +3,9 @@ lazygit*
 TabNine*
 go*
 signal-desktop-keyring.gpg
+
+# Written by xdg-mime and xdg-user-dirs-update, so they cannot be stow symlinks
+# and collect per-machine entries such as userapp-Firefox-HSGWO3.desktop.
+packages/config/dot-config/mimeapps.list
+packages/config/dot-config/user-dirs.dirs
+packages/config/dot-config/user-dirs.locale
