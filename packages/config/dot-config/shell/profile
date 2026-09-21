@@ -7,7 +7,7 @@
 
 # Adds `~/.local/bin` to $PATH
 typeset -U path PATH
-path=("$HOME/.local/bin" "$HOME/.local/bin/statusbar" $path)
+path=("$HOME/.local/bin" "$HOME/.local/bin/statusbar" "$HOME/.local/share/go/bin" $path)
 export PATH
 
 # Needed before the host override below, which reads it.
