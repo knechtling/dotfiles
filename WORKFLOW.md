@@ -24,12 +24,11 @@ the last saved directory. `knotify command ...` returns the command's exit code.
 Kitty is the default local terminal. Ctrl-Shift-Enter opens a window in the current
 directory; Ctrl-Shift-t opens a tab. Ctrl-Shift-h/j/k/l move between panes as the
 tmux bindings did, so layout cycling moves to Ctrl-Shift-backslash and scrolling
-to Ctrl-Shift-Up/Down. The mouse side buttons resize the active pane (add
-Shift for vertical) and Ctrl-right-click opens the resize mode; kitty has no
-drag-to-resize borders. `getkeys kitty` lists the full set. Use tmux for persistent work or on remote
+to Ctrl-Shift-Up/Down. Panes resize by dragging a border, and Ctrl-right-click
+still opens the resize mode. `getkeys kitty` lists the full set. Use tmux for persistent work or on remote
 hosts. Ctrl-Shift-s browses the scrollback in Neovim and Ctrl-Shift-g the last
-command's output, both through kitty-scrollback.nvim, which is pinned to v7.0.0
-because Debian ships kitty 0.41.1. scrollback_pager stays less -R: a plain Neovim
+command's output, both through kitty-scrollback.nvim, which now tracks its
+latest release. scrollback_pager stays less -R: a plain Neovim
 buffer renders ANSI escapes literally. SSH remote-control
 forwarding remains disabled. Clipboard reads retain Kitty's confirmation prompt.
 
@@ -71,7 +70,7 @@ lua/native/lsp.lua or YAML language-server modelines.
 Git: [c / ]c previous/next change, Space gp preview, Space gs stage the current
 change, Space gb blame. These bindings are buffer-local for Git-tracked files.
 
-Dependencies: Neovim >=0.12, git, rg, fzf, yazi, Kitty, tmux >=3.3, Zsh, GNU Stow,
+Dependencies: Neovim >=0.12, git, rg, fzf, yazi, Kitty >=0.46, tmux >=3.3, Zsh, GNU Stow,
 Zinit and the declared shell/tmux plugins. NativeTools reports language tools;
 the existing Mason bin directory is used only as a fallback. Plugin versions
 are stored in nvim-pack-lock.json. NativeUpdate explicitly reviews updates.
@@ -87,6 +86,22 @@ yazi is not packaged for Debian. Install the release binaries per host into
     install -m 644 /tmp/yazi-$t/completions/_{yazi,ya} ~/.config/zsh/
 
 The gnu build needs glibc >= 2.39; use the musl archive on older hosts.
+
+Debian 13 ships kitty 0.41.1, which predates border dragging (0.46) and the
+kitty >= 0.43 that kitty-scrollback.nvim 8.x requires, and backports carries no
+newer build. Install upstream's binary per host into ~/.local/kitty.app; re-run
+the same line to update:
+
+    curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin
+    ln -sf ~/.local/kitty.app/bin/kitty ~/.local/kitty.app/bin/kitten ~/.local/bin/
+    cp ~/.local/kitty.app/share/applications/kitty*.desktop ~/.local/share/applications/
+    sed -i "s|Icon=kitty|Icon=$HOME/.local/kitty.app/share/icons/hicolor/256x256/apps/kitty.png|" \
+      ~/.local/share/applications/kitty*.desktop
+    sed -i "s|Exec=kitty|Exec=$HOME/.local/kitty.app/bin/kitty|" \
+      ~/.local/share/applications/kitty*.desktop
+
+The Debian package can stay installed as a fallback: ~/.local/bin precedes
+/usr/bin, and the desktop files above name the new binary explicitly.
 
 ## Verification after restart
 
