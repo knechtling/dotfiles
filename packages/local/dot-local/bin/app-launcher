@@ -1,0 +1,13 @@
+#!/bin/sh
+# Application launcher: walker when installed, rofi otherwise.
+# Used by dwl (super+d), sway ($menu) and the waybar app menu.
+
+if command -v walker >/dev/null 2>&1; then
+  exec walker "$@"
+elif command -v rofi >/dev/null 2>&1; then
+  exec rofi -show drun -show-icons "$@"
+else
+  notify-send "app-launcher" "Neither walker nor rofi is installed" 2>/dev/null
+  printf 'app-launcher: neither walker nor rofi is installed\n' >&2
+  exit 1
+fi

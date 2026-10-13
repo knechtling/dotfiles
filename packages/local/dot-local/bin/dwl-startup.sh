@@ -64,4 +64,7 @@ pgrep -f 'foot --server' >/dev/null 2>&1 || foot --server &
 # swayosd-server for visual popups
 pgrep -x swayosd-server >/dev/null 2>&1 || swayosd-server &
 
-pgrep -f 'walker --gapplication-service' >/dev/null 2>&1 || walker --gapplication-service &
+# Walker service (optional; app-launcher falls back to rofi without it)
+if command -v walker >/dev/null 2>&1; then
+  pgrep -f 'walker --gapplication-service' >/dev/null 2>&1 || walker --gapplication-service &
+fi

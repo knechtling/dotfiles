@@ -13,7 +13,7 @@ usage() {
 	The screenshot directory defaults to \$HOME/Pictures/Screenshots and can be
 	overridden with SCREENSHOT_DIR. The selection delay can be configured with
 	SCREENSHOT_SELECT_DELAY (default: 0.25s).
-	The menu tool can be set with SCREENSHOT_MENU (default: walker, fallback wmenu).
+	The menu tool can be set with SCREENSHOT_MENU (default: rofi, fallback wmenu).
 	EOF
 }
 
@@ -40,17 +40,17 @@ run_menu() {
   prompt="$1"
   if [ -n "${SCREENSHOT_MENU:-}" ]; then
     launcher="$SCREENSHOT_MENU"
-  elif command -v walker >/dev/null 2>&1; then
-    launcher="walker"
+  elif command -v rofi >/dev/null 2>&1; then
+    launcher="rofi"
   elif command -v wmenu >/dev/null 2>&1; then
     launcher="wmenu"
   else
-    printf 'No menu tool found (walker/wmenu). Set SCREENSHOT_MENU.\n' >&2
+    printf 'No menu tool found (rofi/wmenu). Set SCREENSHOT_MENU.\n' >&2
     exit 1
   fi
 
   case "$launcher" in
-  walker) walker --dmenu -p "$prompt" ;;
+  rofi) rofi -dmenu -i -p "$prompt" ;;
   wmenu) wmenu -p "$prompt" ;;
   *) "$launcher" ;;
   esac

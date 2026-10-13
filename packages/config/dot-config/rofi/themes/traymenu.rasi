@@ -1,0 +1,54 @@
+/* Tray right-click menu for dwl (colors match the dwl bar) */
+configuration {
+    font:           "monospace 10";
+    show-icons:     true;
+    hover-select:   true;
+    me-select-entry: "";
+    me-accept-entry: "MousePrimary";
+}
+
+* {
+    bg:      #222222;
+    fg:      #bbbbbb;
+    sel-bg:  #005577;
+    sel-fg:  #eeeeee;
+    border:  #444444;
+
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+window {
+    location:         north east;
+    anchor:           north east;
+    x-offset:         -4px;
+    y-offset:         24px;   /* bar height; adjust if it overlaps or floats */
+    width:            250px;  /* dwl overrides this per menu */
+    background-color: @bg;
+    border:           1px;
+    border-color:     @border;
+}
+
+mainbox  { children: [ listview ]; }
+
+listview {
+    lines:        15;
+    dynamic:      true;
+    fixed-height: false;
+    scrollbar:    true;
+    spacing:      0;
+    padding:      4px 0;
+}
+
+/* Thin position indicator on the right edge */
+scrollbar {
+    width:            4px;
+    handle-width:     4px;
+    handle-color:     @fg;
+    background-color: @border;
+    margin:           0 2px 0 0;
+}
+
+element          { padding: 4px 10px; }
+element selected { background-color: @sel-bg; text-color: @sel-fg; }
+element-text     { text-color: inherit; }
