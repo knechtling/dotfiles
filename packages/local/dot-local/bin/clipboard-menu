@@ -1,0 +1,19 @@
+#!/bin/sh
+# Pick an entry from the cliphist history and copy it to the clipboard.
+# Menu: walker when installed, rofi otherwise, wmenu as a last resort.
+
+if command -v walker >/dev/null 2>&1; then
+  menu() { walker -d; }
+elif command -v rofi >/dev/null 2>&1; then
+  menu() { rofi -dmenu -i -p "Clipboard" -display-columns 2; }
+elif command -v wmenu >/dev/null 2>&1; then
+  menu() { wmenu -l 10; }
+else
+  notify-send "clipboard-menu" "No menu tool found (walker/rofi/wmenu)" 2>/dev/null
+  printf 'clipboard-menu: no menu tool found (walker/rofi/wmenu)\n' >&2
+  exit 1
+fi
+
+choice="$(cliphist list | menu)" || exit 1
+[ -n "$choice" ] || exit 1
+printf '%s\n' "$choice" | cliphist decode | wl-copy

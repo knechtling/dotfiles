@@ -87,7 +87,7 @@ for_window [app_id="Bitwarden"]   floating enable, move scratchpad, resize set 8
 bindsym $mod+Return            exec $term
 bindsym $mod+d                 exec $menu
 bindsym $mod+F1                exec j4-dmenu-desktop
-bindsym $mod+c                 exec sh -c 'cliphist list | walker -d | cliphist decode | wl-copy'
+bindsym $mod+c                 exec clipboard-menu
 bindsym $mod+BackSpace         exec sysact
 bindsym Control_R              exec wlr-which-key
 
