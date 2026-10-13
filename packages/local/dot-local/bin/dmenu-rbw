@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Retrieve a list of usernames
+entries=$(rbw list)
+
+# Prompt the user to choose a username
+chosen_username=$(echo "$entries" | dmenu -l 10 -p "Select a Username:")
+
+# Retrieve the password for the chosen username
+password=$(rbw get "$chosen_username")
+
+# Copy the password to the clipboard
+echo -n "$password" | xclip -selection clipboard
+
+notify-send "Password copied to clipboard for username: $chosen_username"

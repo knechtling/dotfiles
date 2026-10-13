@@ -1,0 +1,54 @@
+#!/bin/sh
+# startsway -- single entry point for sway, analogous to startw for dwl.
+#
+# Use from a TTY or a display manager that execs it directly (e.g. emptty).
+
+LOGFILE="${XDG_CACHE_HOME:-$HOME/.cache}/sway-session.log"
+STOPFILE="${XDG_CACHE_HOME:-$HOME/.cache}/sway-stop"
+
+# emptty execs this script directly after PAM without a login shell, so
+# ~/.config/shell/profile (zsh-specific) is never sourced. Ensure user bin is
+# on PATH so helpers (setbg, screenshot.sh, sway-scratch, ...) are findable.
+case ":$PATH:" in
+    *":$HOME/.local/bin:"*) ;;
+    *) PATH="$HOME/.local/bin:$PATH" ;;
+esac
+export PATH
+
+cd "$HOME" || exit 1
+
+mkdir -p "$(dirname "$LOGFILE")"
+
+# Sensible Wayland/toolkit defaults before sway starts.
+export XDG_CURRENT_DESKTOP=sway
+export XDG_SESSION_TYPE=wayland
+export XDG_SESSION_DESKTOP=sway
+# Moz/Electron/etc can switch to native Wayland backends cleanly with these:
+export MOZ_ENABLE_WAYLAND=1
+export QT_QPA_PLATFORM=wayland
+export SDL_VIDEODRIVER=wayland
+export _JAVA_AWT_WM_NONREPARENTING=1
+
+# Clean up stale Xwayland sockets left over from a previously crashed session.
+for f in /tmp/.X11-unix/X0 /tmp/.X0-lock; do
+    if [ -e "$f" ] && ! fuser "$f" >/dev/null 2>&1; then
+        rm -f "$f"
+    fi
+done
+
+while :; do
+    [ -f "$STOPFILE" ] && rm -f "$STOPFILE" && break
+
+    printf '[%s] starting sway\n' "$(date '+%F %T')" >>"$LOGFILE"
+    sway
+    status=$?
+    printf '[%s] sway exited (%s)\n' "$(date '+%F %T')" "$status" >>"$LOGFILE"
+
+    [ "$status" -eq 0 ] && break
+    sleep 1
+done
+
+# Tear down the graphical session so user units stop cleanly on logout.
+if command -v systemctl >/dev/null 2>&1; then
+    systemctl --user stop graphical-session.target
+fi

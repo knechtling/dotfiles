@@ -1,0 +1,6 @@
+enter_accept = false
+filter_mode = "global"
+filter_mode_shell_up_key_binding = "directory"
+inline_height = 40
+style = "compact"
+workspaces = true

@@ -1,0 +1,245 @@
+#!/bin/sh
+# Simple Wayland display selector using wlr-randr and a dmenu-compatible UI.
+# Mirrors the behaviour of the X11 script while adding a "mirror all" option.
+
+set -eu
+
+# Pick a dmenu-style runner that works on Wayland first.
+menu() {
+    prompt=$1; shift
+    if command -v wofi >/dev/null 2>&1; then
+        wofi --dmenu --prompt "$prompt" "$@"
+    elif command -v bemenu >/dev/null 2>&1; then
+        bemenu -i -p "$prompt" "$@"
+    else
+        dmenu -i -p "$prompt" "$@"
+    fi
+}
+
+notify() {
+    command -v notify-send >/dev/null 2>&1 && notify-send "$@"
+}
+
+die() {
+    notify "Display selector error" "$1" || true
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+command -v wlr-randr >/dev/null 2>&1 || die "wlr-randr is required."
+
+# Parse wlr-randr output into tab-separated records:
+# name connected enabled current_w current_h preferred_w preferred_h
+outputs_info=$(wlr-randr | python - <<'PY'
+import re, sys
+
+text = sys.stdin.read().splitlines()
+outputs = []
+current = None
+in_modes = False
+
+def flush():
+    if current:
+        outputs.append(current)
+
+for line in text:
+    if not line.strip():
+        in_modes = False
+        continue
+    if not line.startswith(" "):
+        flush()
+        parts = line.strip().split()
+        name = parts[0]
+        disconnected = "disconnected" in line
+        current = {
+            "name": name,
+            "connected": int(not disconnected),
+            "enabled": 0,
+            "current": (None, None),
+            "preferred": (None, None),
+        }
+        in_modes = False
+        continue
+    if current is None:
+        continue
+    stripped = line.strip()
+    if stripped.startswith("Current mode:"):
+        m = re.search(r"(\d+)x(\d+)", stripped)
+        if m:
+            current["current"] = (int(m.group(1)), int(m.group(2)))
+    elif stripped.startswith("Enabled:"):
+        current["enabled"] = int(stripped.split()[-1] == "yes")
+    elif stripped.startswith("Modes:"):
+        in_modes = True
+    elif in_modes:
+        m = re.match(r"(\d+)x(\d+)", stripped)
+        if m and current["preferred"][0] is None and "(preferred)" in stripped:
+            current["preferred"] = (int(m.group(1)), int(m.group(2)))
+
+flush()
+for o in outputs:
+    cw, ch = o["current"]
+    pw, ph = o["preferred"]
+    # fall back to current when preferred missing
+    if pw is None:
+        pw, ph = cw, ch
+    print(
+        f"{o['name']}\t{o['connected']}\t{o['enabled']}\t"
+        f"{cw or ''}\t{ch or ''}\t{pw or ''}\t{ph or ''}"
+    )
+PY
+) || die "Failed to read outputs from wlr-randr."
+
+get_field() {
+    name=$1 field=$2
+    printf '%s\n' "$outputs_info" | awk -v n="$name" -v f="$field" '$1==n {print $f; exit}'
+}
+
+preferred_mode() {
+    name=$1
+    w=$(get_field "$name" 6)
+    h=$(get_field "$name" 7)
+    [ -n "$w" ] && [ -n "$h" ] && printf '%sx%s' "$w" "$h"
+}
+
+width_for() {
+    name=$1
+    w=$(get_field "$name" 6)
+    [ -z "$w" ] && w=$(get_field "$name" 4)
+    [ -z "$w" ] && w=1920
+    printf '%s' "$w"
+}
+
+output_args() {
+    name=$1; x=$2; y=$3; scale=${4:-1}
+    mode=$(preferred_mode "$name")
+    args="--output $name --on --pos ${x},${y} --scale $scale"
+    [ -n "$mode" ] && args="$args --mode $mode"
+    printf '%s' "$args"
+}
+
+disable_args() {
+    target=$1
+    for out in $connected_screens; do
+        [ "$out" = "$target" ] || printf ' --output %s --off' "$out"
+    done
+}
+
+connected_screens=$(printf '%s\n' "$outputs_info" | awk '$2=="1"{print $1}')
+[ -n "$connected_screens" ] || die "No connected displays found."
+
+screen_count=$(printf '%s\n' "$connected_screens" | wc -l)
+
+onescreen() {
+    target=$1
+    cmd="wlr-randr $(output_args "$target" 0 0 1)"
+    for out in $connected_screens; do
+        [ "$out" = "$target" ] || cmd="$cmd --output $out --off"
+    done
+    eval "$cmd"
+    notify "Display changed" "Using only $target."
+}
+
+mirror_all() {
+    cmd="wlr-randr"
+    for out in $connected_screens; do
+        cmd="$cmd $(output_args "$out" 0 0 1)"
+    done
+    eval "$cmd"
+    notify "Display changed" "Mirroring all connected displays."
+}
+
+two_screen_setup() {
+    mirror_choice=$(printf "no\nyes" | menu "Mirror displays?")
+    [ -n "$mirror_choice" ] || exit 0
+    screens_list=$(printf '%s\n' "$connected_screens")
+    if [ "$mirror_choice" = "yes" ]; then
+        base=$(printf '%s\n' "$screens_list" | menu "Optimize resolution for:")
+        [ -n "$base" ] || exit 0
+        other=$(printf '%s\n' "$screens_list" | grep -Fxv "$base")
+        cmd="wlr-randr $(output_args "$base" 0 0 1) $(output_args "$other" 0 0 1)"
+        eval "$cmd"
+        notify "Display changed" "Mirroring $base and $other."
+        return
+    fi
+    primary=$(printf '%s\n' "$screens_list" | menu "Select primary display:")
+    [ -n "$primary" ] || exit 0
+    secondary=$(printf '%s\n' "$screens_list" | grep -Fxv "$primary")
+    direction=$(printf "left\nright" | menu "What side of $primary should $secondary be on?")
+    [ -n "$direction" ] || exit 0
+    primary_w=$(width_for "$primary")
+    secondary_w=$(width_for "$secondary")
+    if [ "$direction" = "left" ]; then
+        sec_x=$(( -secondary_w ))
+    else
+        sec_x=$primary_w
+    fi
+    cmd="wlr-randr $(output_args "$primary" 0 0 1) $(output_args "$secondary" "$sec_x" 0 1)"
+    eval "$cmd"
+    notify "Display changed" "Arranged $secondary $direction of $primary."
+}
+
+more_screen_setup() {
+    screens_list=$(printf '%s\n' "$connected_screens")
+    primary=$(printf '%s\n' "$screens_list" | menu "Select primary display:")
+    [ -n "$primary" ] || exit 0
+    secondary=$(printf '%s\n' "$screens_list" | grep -Fxv "$primary" | menu "Select secondary display:")
+    [ -n "$secondary" ] || exit 0
+    direction=$(printf "left\nright" | menu "What side of $primary should $secondary be on?")
+    [ -n "$direction" ] || exit 0
+    tertiary=$(printf '%s\n' "$screens_list" | grep -Fxv "$primary" | grep -Fxv "$secondary" | menu "Select third display:")
+    [ -n "$tertiary" ] || exit 0
+
+    primary_w=$(width_for "$primary")
+    secondary_w=$(width_for "$secondary")
+    tertiary_w=$(width_for "$tertiary")
+
+    if [ "$direction" = "left" ]; then
+        sec_x=$(( -secondary_w ))
+        ter_x=$primary_w
+    else
+        sec_x=$primary_w
+        ter_x=$(( -tertiary_w ))
+    fi
+
+    cmd="wlr-randr $(output_args "$primary" 0 0 1) $(output_args "$secondary" "$sec_x" 0 1) $(output_args "$tertiary" "$ter_x" 0 1)"
+    for out in $connected_screens; do
+        case "$out" in
+            "$primary"|"$secondary"|"$tertiary") : ;;
+            *) cmd="$cmd --output $out --off" ;;
+        esac
+    done
+    eval "$cmd"
+    notify "Display changed" "Arranged three displays around $primary."
+}
+
+multi_monitor() {
+    case "$screen_count" in
+        2) two_screen_setup ;;
+        *) more_screen_setup ;;
+    esac
+}
+
+if [ "$screen_count" -lt 2 ]; then
+    onescreen "$connected_screens"
+    exit 0
+fi
+
+choice=$(printf "%s\nmulti-monitor\nmirror all\nmanual selection" "$connected_screens" | menu "Select display arrangement:")
+[ -n "$choice" ] || exit 0
+
+case "$choice" in
+    "multi-monitor") multi_monitor ;;
+    "manual selection")
+        if command -v wdisplays >/dev/null 2>&1; then
+            wdisplays &
+            exit 0
+        else
+            die "wdisplays not found for manual selection."
+        fi
+        ;;
+    "mirror all") mirror_all ;;
+    *)
+        onescreen "$choice"
+        ;;
+esac

@@ -1,0 +1,15 @@
+[Unit]
+Description=Solaar - Logitech device manager (rule-based HID++ remapping)
+Documentation=https://pwr-solaar.github.io/Solaar/
+# Tie lifecycle to the graphical session so it stops on logout.
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/solaar --window=hide --restart-on-wake-up --battery-icons=symbolic
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target

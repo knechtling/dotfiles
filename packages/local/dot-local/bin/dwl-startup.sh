@@ -21,7 +21,13 @@ fi
 # Bring up the dwl session target; via BindsTo it also starts
 # graphical-session.target, so user units with WantedBy=graphical-session.target
 # (e.g. solaar.service) autostart with the compositor.
+#
+# startw restarts dwl without tearing the session down, so the targets may
+# still be active from the previous dwl. Stop them first: otherwise "start"
+# is a no-op and autostart apps that died with the old dwl stay dead.
 if command -v systemctl >/dev/null 2>&1; then
+  systemctl --user stop graphical-session.target xdg-desktop-autostart.target
+  systemctl --user reset-failed
   systemctl --user start dwl-session.target
 fi
 
@@ -59,5 +65,3 @@ pgrep -f 'foot --server' >/dev/null 2>&1 || foot --server &
 pgrep -x swayosd-server >/dev/null 2>&1 || swayosd-server &
 
 pgrep -f 'walker --gapplication-service' >/dev/null 2>&1 || walker --gapplication-service &
-#
-pgrep -x arch-update --tray >/dev/null 2>&1 || arch-update --tray &

@@ -1,0 +1,40 @@
+#!/bin/sh
+# sway-scratch <term|bw|net>
+#
+# Toggle a named scratchpad. If the target window exists (matched by app_id),
+# sway is told to `scratchpad show` it; otherwise the relevant command is spawned.
+#
+# Window-to-scratchpad association is done in ~/.config/sway/config via
+#   for_window [app_id="..."] move scratchpad, ...
+
+set -eu
+
+kind=${1:-}
+if [ -z "$kind" ]; then
+    printf 'usage: sway-scratch {term|bw|net}\n' >&2
+    exit 2
+fi
+
+case "$kind" in
+    term) app_id=scratchpad ;;
+    bw)   app_id=Bitwarden  ;;
+    net)  app_id=scratchnet  ;;
+    *)    printf 'unknown scratchpad: %s\n' "$kind" >&2; exit 2 ;;
+esac
+
+# -f avoids jq dependency and produces plain 0/1.
+count=$(swaymsg -t get_tree \
+    | grep -c "\"app_id\": \"$app_id\"" \
+    || true)
+
+if [ "$count" -gt 0 ]; then
+    swaymsg "[app_id=\"$app_id\"] scratchpad show" >/dev/null
+    exit 0
+fi
+
+# Spawn fresh.
+case "$kind" in
+    term) exec foot -a scratchpad                         ;;
+    bw)   exec bitwarden-desktop                           ;;
+    net)  exec foot -a scratchnet -e nmtui                ;;
+esac

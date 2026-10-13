@@ -1,0 +1,128 @@
+#!/bin/sh
+#
+# Wayland display manager for wlroots compositors using wlr-randr
+# Supports:
+#   - Enable only one output
+#   - Multi-monitor layout (left/right)
+#   - Mirror modes (position + scale)
+#
+
+# ------------ Helper functions ---------------- #
+
+outputs() {
+  # Extract output names
+  wlr-randr | awk '/^[A-Za-z0-9-]+ "/ {print $1}'
+}
+
+current_mode() {
+  # Extract current resolution of an output
+  wlr-randr | sed -n "/^$1 /,/^[A-Za-z0-9-]+ \"/p" |
+    awk '/current/ {print $3; exit}'
+}
+
+mirror_position() {
+  primary="$1"
+  secondary="$2"
+  wlr-randr --output "$primary" --pos 0,0
+  wlr-randr --output "$secondary" --pos 0,0
+  notify-send "📺 Mirroring" "Position-mirroring $primary and $secondary."
+}
+
+mirror_scale() {
+  primary="$1"
+  secondary="$2"
+
+  p_res=$(current_mode "$primary")
+  s_res=$(current_mode "$secondary")
+
+  pw=${p_res%x*}
+  ph=${p_res#*x}
+  sw=${s_res%x*}
+  sh=${s_res#*x}
+
+  sx=$(echo "$pw / $sw" | bc -l)
+  sy=$(echo "$ph / $sh" | bc -l)
+
+  wlr-randr --output "$primary" --scale 1,1 --pos 0,0
+  wlr-randr --output "$secondary" --scale "$sx","$sy" --pos 0,0
+
+  notify-send "📺 Mirroring" "Scaled-mirroring $secondary to match $primary."
+}
+
+mirror_menu() {
+  primary="$1"
+  secondary="$2"
+
+  mode=$(printf "position-mirror\nscale-mirror" |
+    dmenu -i -p "Mirror mode for $secondary:")
+
+  case "$mode" in
+  position-mirror) mirror_position "$primary" "$secondary" ;;
+  scale-mirror) mirror_scale "$primary" "$secondary" ;;
+  *) notify-send "Cancelled mirror" ;;
+  esac
+}
+
+single_output() {
+  chosen="$1"
+  for out in $(outputs); do
+    if [ "$out" = "$chosen" ]; then
+      wlr-randr --output "$out" --on --pos 0,0 --scale 1,1
+    else
+      wlr-randr --output "$out" --off
+    fi
+  done
+  notify-send "🖥️ Single Display" "Enabled $chosen; disabled others."
+}
+
+multi_output() {
+  outlist=$(outputs)
+
+  primary=$(printf "%s\n" $outlist |
+    dmenu -i -p "Select primary output:")
+
+  secondary=$(printf "%s\n" $outlist |
+    grep -v "$primary" |
+    dmenu -i -p "Select secondary output:")
+
+  action=$(printf "left-of\nright-of\nmirror" |
+    dmenu -i -p "Arrange $secondary relative to $primary:")
+
+  case "$action" in
+  left-of)
+    wlr-randr --output "$primary" --pos 0,0
+    wlr-randr --output "$secondary" --pos -1,0
+    notify-send "↔️ Layout" "$secondary left of $primary"
+    ;;
+  right-of)
+    wlr-randr --output "$primary" --pos 0,0
+    wlr-randr --output "$secondary" --pos +1,0
+    notify-send "↔️ Layout" "$secondary right of $primary"
+    ;;
+  mirror)
+    mirror_menu "$primary" "$secondary"
+    ;;
+  esac
+}
+
+# ---------------- Main Logic ---------------- #
+
+outs=$(outputs)
+count=$(printf "%s\n" $outs | wc -l)
+
+if [ "$count" -lt 2 ]; then
+  # Only one monitor detected
+  single_output "$outs"
+  exit 0
+fi
+
+choice=$(printf "%s\nmulti-monitor\nexit" $outs |
+  dmenu -i -p "Display mode:")
+
+case "$choice" in
+"multi-monitor") multi_output ;;
+"exit") exit ;;
+*)
+  single_output "$choice"
+  ;;
+esac

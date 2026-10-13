@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+while true; do
+  # 'apropos . ' lists all manpages with their short description
+  choice=$(apropos . 2>/dev/null | fzf --prompt="man> " --preview "echo {}" --height=40% --reverse)
+
+  # If user pressed ESC or Ctrl+C, exit
+  [[ -z "$choice" ]] && break
+
+  # Extract the command name and section (e.g. "ls (1)")
+  cmd=$(echo "$choice" | awk '{print $1}')
+  section=$(echo "$choice" | grep -oP '\(\K[^)]+' | head -n1)
+
+  # If section is empty, open man without section
+  if [[ -n "$section" ]]; then
+    man "$section" "$cmd"
+  else
+    man "$cmd"
+  fi
+done
