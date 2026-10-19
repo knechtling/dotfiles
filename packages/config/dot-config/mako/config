@@ -1,0 +1,4 @@
+default-timeout=5000
+[app-name=screenshot]
+on-button-right=exec imv ~/Pictures/Screenshots/last.png
+on-button-left=exec sh -c 'realpath ~/Pictures/Screenshots/last.png | tee >(wl-copy) >/dev/null

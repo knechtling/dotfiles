@@ -34,7 +34,7 @@
   // ── Left ──────────────────────────────────────────────────────────────────
   "custom/appmenu": {
     "format": "  Apps",
-    "on-click": "walker",
+    "on-click": "app-launcher",
     "tooltip": false
   },
   "sway/workspaces": {

@@ -5,7 +5,7 @@
  \__,_| \_/\_/ |_|
 
 dwl (dwl-forge) is the Wayland window manager.
-	super+d - Open app launcher (walker)
+	super+d - Open app launcher (walker, fallback rofi)
 	super+return - Open terminal
 	super+shift+return - Toggle scratchpad terminal
 	super+shift+p - Toggle scratchpad (Bitwarden)

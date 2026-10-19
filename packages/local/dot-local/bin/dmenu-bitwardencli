@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Prompt for username and password
+password=$(dmenu -p "Enter Bitwarden Password:" -P)
+
+# Unlock the Bitwarden vault and retrieve the session key
+session_key=$(bw unlock "$password" --raw)
+if [ -z "$session_key" ]; then
+  echo "Failed to unlock Bitwarden vault."
+  exit 1
+fi
+
+# Export the session key as an environment variable
+export BW_SESSION="$session_key"
+
+# Retrieve a list of usernames
+entries=$(bw list items --session "$BW_SESSION" --pretty | jq -r '.[].name')
+
+# Prompt the user to choose a username
+chosen_username=$(echo "$entries" | dmenu -l 10 -p "Select a Username:")
+
+# Retrieve the password for the chosen username
+password=$(bw get password "$chosen_username" --session "$BW_SESSION" --raw)
+
+# Copy the password to the clipboard
+echo -n "$password" | xclip -selection clipboard
+
+notify-send "Password copied to clipboard for username: $chosen_username"

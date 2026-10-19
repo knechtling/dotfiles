@@ -1,0 +1,9 @@
+[user]
+	email = anton.liepelt@gmx.de
+	name = Anton
+[init]
+	defaultBranch = master
+[safe]
+	directory = /opt/flutter
+	directory = /home/anton/projects/imunixx/swalls/
+	directory = /home/anton/projects/imunixx/swalls/Shorewall

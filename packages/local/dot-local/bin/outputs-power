@@ -1,0 +1,29 @@
+#!/bin/sh
+set -eu
+
+# list outputs from wlr-randr (first token of non-indented lines)
+list_outputs() {
+  wlr-randr | awk '/^[A-Za-z0-9-]+/{print $1}'
+}
+
+case "${1:-}" in
+  off)
+    # turn all off; run twice to fight "wakes up after a second"
+    for o in $(list_outputs); do
+      wlopm --off "$o" 2>/dev/null || wlr-randr --output "$o" --off
+    done
+    sleep 0.7
+    for o in $(list_outputs); do
+      wlopm --off "$o" 2>/dev/null || wlr-randr --output "$o" --off
+    done
+    ;;
+  on)
+    for o in $(list_outputs); do
+      wlopm --on "$o" 2>/dev/null || wlr-randr --output "$o" --on
+    done
+    ;;
+  *)
+    echo "usage: $0 {off|on}" >&2
+    exit 2
+    ;;
+esac
