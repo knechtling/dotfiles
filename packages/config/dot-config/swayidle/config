@@ -3,8 +3,8 @@
 # suspend after 15 min only on battery. Apps playing video/calls inhibit idle.
 timeout 285 'idle-ctl dim' resume 'idle-ctl undim'
 timeout 300 'idle-ctl off' resume 'idle-ctl on; idle-ctl undim'
-timeout 600 'swaylock -f -c 000000'
+timeout 600 'swaylock -f'
 timeout 900 'idle-ctl suspend'
-before-sleep 'swaylock -f -c 000000'
+before-sleep 'swaylock -f'
 after-resume 'idle-ctl on; idle-ctl undim'
-lock 'swaylock -f -c 000000'
+lock 'swaylock -f'

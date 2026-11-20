@@ -1,0 +1,6 @@
+# Shared by swayidle (idle/lid/before-sleep) and sysact; keep the look here.
+color=000000
+ignore-empty-password
+show-failed-attempts
+indicator-caps-lock
+font=monospace
