@@ -1,0 +1,9 @@
+#!/bin/sh
+# Mod+Shift+Q: ask before ending the session (all windows are closed).
+# The stop file tells startw not to restart dwl (same as sysact "leave").
+choice=$(printf 'Nein\nJa, abmelden\n' | wmenu -i -p 'dwl beenden? Alle Fenster werden geschlossen.') || exit 0
+[ "$choice" = "Ja, abmelden" ] || exit 0
+stop="${XDG_CACHE_HOME:-$HOME/.cache}/dwl-stop"
+mkdir -p "$(dirname "$stop")"
+: >"$stop"
+pkill -TERM -x dwl

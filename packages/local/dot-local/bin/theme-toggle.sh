@@ -23,6 +23,19 @@ have() {
   command -v "$1" >/dev/null 2>&1
 }
 
+# Change one key in a GTK settings.ini, keeping every other line (icon theme,
+# font, cursor, ...). Writes through symlinks into the dotfiles repo.
+set_ini_key() {
+  local file="$1" key="$2" value="$3"
+  mkdir -p "$(dirname "$file")"
+  [[ -f "$file" ]] || printf '[Settings]\n' >"$file"
+  if grep -q "^$key=" "$file"; then
+    sed -i --follow-symlinks "s|^$key=.*|$key=$value|" "$file"
+  else
+    printf '%s=%s\n' "$key" "$value" >>"$file"
+  fi
+}
+
 write_gtk_settings() {
   local mode="$1"
   local theme dark_flag
@@ -35,19 +48,11 @@ write_gtk_settings() {
     dark_flag=0
   fi
 
-  mkdir -p "$(dirname "$GTK3_SETTINGS")" "$(dirname "$GTK4_SETTINGS")"
-
-  cat >"$GTK3_SETTINGS" <<EOF
-[Settings]
-gtk-theme-name=$theme
-gtk-application-prefer-dark-theme=$dark_flag
-EOF
-
-  cat >"$GTK4_SETTINGS" <<EOF
-[Settings]
-gtk-theme-name=$theme
-gtk-application-prefer-dark-theme=$dark_flag
-EOF
+  local f
+  for f in "$GTK3_SETTINGS" "$GTK4_SETTINGS"; do
+    set_ini_key "$f" gtk-theme-name "$theme"
+    set_ini_key "$f" gtk-application-prefer-dark-theme "$dark_flag"
+  done
 }
 
 set_gsettings_mode() {
