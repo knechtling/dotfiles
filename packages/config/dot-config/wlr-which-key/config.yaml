@@ -74,8 +74,7 @@ menu:
   "a":
     desc: Apps
     submenu:
-      "p": { desc: Music Player, cmd: "$MUSICPLAYER" }
-      "e": { desc: Email Client, cmd: "$EMAILCLIENT" }
+      "e": { desc: Email Client, cmd: "thunderbird" }
       "y":
         { desc: Terminal YouTube Browser, cmd: "foot -T floating -e ytfzf -t" }
       "n":
