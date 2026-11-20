@@ -84,6 +84,11 @@ pgrep -x 'swayidle' >/dev/null 2>&1 || swayidle -w -C "$HOME/.config/swayidle/co
 # Foot terminal server (for footclient spawning)
 pgrep -f 'foot --server' >/dev/null 2>&1 || foot --server &
 
+# Night light: warmer colours after sunset (config: ~/.config/gammastep)
+if command -v gammastep >/dev/null 2>&1; then
+  pgrep -x gammastep >/dev/null 2>&1 || gammastep &
+fi
+
 # swayosd-server for visual popups
 pgrep -x swayosd-server >/dev/null 2>&1 || swayosd-server &
 
