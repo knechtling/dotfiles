@@ -95,7 +95,7 @@ menu:
   "x":
     desc: Session
     submenu:
-      "q": { desc: Quit dwl, cmd: "dwlmsg -s -c quit" }
+      "q": { desc: Quit dwl, cmd: "touch ${XDG_CACHE_HOME:-$HOME/.cache}/dwl-stop && pkill -TERM -x dwl" }
       "s": { desc: Suspend (systemd), cmd: "systemctl suspend" }
       "h": { desc: Hibernate (systemd), cmd: "systemctl hibernate" }
       "r": { desc: Reboot (systemd), cmd: "systemctl reboot" }
