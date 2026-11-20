@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# Bluetooth menu for tiling WMs (replaces the GNOME Bluetooth panel).
+# Connect/disconnect paired devices, pair new ones, power on/off.
+# PIN/passkey prompts during pairing come from blueman-applet's agent;
+# audio profiles (A2DP vs. headset for calls): blueman-manager, right click.
+
+pick() { rofi -dmenu -i -no-custom -format i -p "$1"; }
+note() { notify-send -a bt-menu "$@" 2>/dev/null; }
+
+powered() { bluetoothctl show | grep -q 'Powered: yes'; }
+
+power_on() {
+	rfkill unblock bluetooth 2>/dev/null
+	bluetoothctl power on >/dev/null && sleep 1
+}
+
+is_connected() { bluetoothctl info "$1" | grep -q 'Connected: yes'; }
+
+dev_name() { bluetoothctl info "$1" | sed -n 's/^\s*Alias: //p'; }
+
+run() { # description, bluetoothctl args...
+	local what="$1" out
+	shift
+	if out=$(bluetoothctl "$@" 2>&1) && ! grep -qiE 'failed|error' <<<"$out"; then
+		note "$what"
+	else
+		note -u critical "Failed: $what" "$(tail -n 3 <<<"$out")"
+		return 1
+	fi
+}
+
+# fills MACS/LINES from "bluetoothctl devices [filter]"
+list_devices() {
+	local mac name mark
+	MACS=() LINES=()
+	while read -r _ mac name; do
+		[ -n "$mac" ] || continue
+		if is_connected "$mac"; then mark="●"; else mark="○"; fi
+		MACS+=("$mac")
+		LINES+=("$(printf '%s %-32s %s' "$mark" "$name" "$mac")")
+	done < <(bluetoothctl devices ${1:+"$1"})
+}
+
+menu_pair() {
+	powered || power_on
+	note "Scanning for 12 seconds…" "Put the device into pairing mode"
+	bluetoothctl --timeout 12 scan on >/dev/null 2>&1
+	local paired
+	paired=$(bluetoothctl devices Paired | awk '{print $2}')
+	list_devices
+	local macs=() lines=() i
+	for i in "${!MACS[@]}"; do
+		grep -qx "${MACS[$i]}" <<<"$paired" && continue
+		macs+=("${MACS[$i]}") lines+=("${LINES[$i]}")
+	done
+	[ ${#macs[@]} -gt 0 ] || { note "No new devices found"; return; }
+	i=$(printf '%s\n' "${lines[@]}" | pick "Pair") || return
+	[ -n "$i" ] || return
+	local mac="${macs[$i]}" name
+	name=$(dev_name "$mac")
+	note "Pairing" "$name"
+	run "Paired $name" --timeout 30 pair "$mac" || return
+	bluetoothctl trust "$mac" >/dev/null
+	run "Connected $name" --timeout 15 connect "$mac"
+}
+
+menu_remove() {
+	list_devices Paired
+	local i
+	i=$(printf '%s\n' "${LINES[@]}" | pick "Remove") || return
+	[ -n "$i" ] && run "Removed $(dev_name "${MACS[$i]}")" remove "${MACS[$i]}"
+}
+
+menu_main() {
+	local entries=() actions=() i mac
+	if powered; then
+		list_devices Paired
+		for i in "${!MACS[@]}"; do
+			entries+=("${LINES[$i]}") actions+=("toggle ${MACS[$i]}")
+		done
+		entries+=("  Pair new device …" "  Remove device …" "  Bluetooth off")
+		actions+=(pair remove off)
+	else
+		entries+=("  Bluetooth on"); actions+=(on)
+	fi
+	entries+=("  Bluetooth manager (blueman) …"); actions+=(manager)
+
+	i=$(printf '%s\n' "${entries[@]}" | pick "Bluetooth") || return
+	[ -n "$i" ] || return
+	case "${actions[$i]}" in
+	toggle\ *)
+		mac="${actions[$i]#toggle }"
+		if is_connected "$mac"; then
+			run "Disconnected $(dev_name "$mac")" disconnect "$mac"
+		else
+			run "Connected $(dev_name "$mac")" --timeout 15 connect "$mac"
+		fi
+		;;
+	pair) menu_pair ;;
+	remove) menu_remove ;;
+	on) power_on && note "Bluetooth on" ;;
+	off) bluetoothctl power off >/dev/null && note "Bluetooth off" ;;
+	manager) blueman-manager & ;;
+	esac
+}
+
+case "$1" in
+pair) menu_pair ;;
+"") menu_main ;;
+*) echo "usage: ${0##*/} [pair]" >&2; exit 2 ;;
+esac

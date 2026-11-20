@@ -44,6 +44,32 @@ menu:
     submenu:
       "u": { desc: Increase Brightness, cmd: "brightnessctl set +15%" }
       "d": { desc: Decrease Brightness, cmd: "brightnessctl set 15%-" }
+      "w": { desc: Wallpaper, cmd: "wallpaper-menu" }
+      "m": { desc: Monitor Layout (wdisplays), cmd: "wdisplays" }
+      "k": { desc: Re-apply Monitor Profile (kanshi), cmd: "pkill -HUP -x kanshi" }
+      "l": { desc: Lock Screen, cmd: "loginctl lock-session" }
+      "c": { desc: Caffeine (no idle) on/off, cmd: "pkill -x swayidle && notify-send 'Caffeine an' 'Kein Dimmen/Sperren/Suspend' || (swayidle -w -C $HOME/.config/swayidle/config & notify-send 'Caffeine aus')" }
+      "p":
+        desc: Power Profile
+        submenu:
+          "s": { desc: Power Saver, cmd: "powerprofilesctl set power-saver && notify-send 'Energieprofil: Sparen'" }
+          "b": { desc: Balanced, cmd: "powerprofilesctl set balanced && notify-send 'Energieprofil: Ausgeglichen'" }
+          "p": { desc: Performance, cmd: "powerprofilesctl set performance && notify-send 'Energieprofil: Leistung'" }
+          "t": { desc: TUXEDO Control Center, cmd: "tuxedo-control-center" }
+
+  "n":
+    desc: Network / VPN / Bluetooth
+    submenu:
+      "n": { desc: Network Menu, cmd: "nm-menu" }
+      "v": { desc: VPN / WireGuard, cmd: "nm-menu vpn" }
+      "w": { desc: Wi-Fi, cmd: "nm-menu wifi" }
+      "e": { desc: Ethernet / VLAN Profiles, cmd: "nm-menu eth" }
+      "c": { desc: Edit Connections, cmd: "nm-connection-editor" }
+      "t": { desc: nmtui, cmd: "foot -T floating -e nmtui" }
+      "b": { desc: Bluetooth Menu, cmd: "bt-menu" }
+      "p": { desc: Pair Bluetooth Device, cmd: "bt-menu pair" }
+      "m": { desc: Bluetooth Manager, cmd: "blueman-manager" }
+      "a": { desc: Audio Mixer (pavucontrol), cmd: "pavucontrol" }
 
   "a":
     desc: Apps

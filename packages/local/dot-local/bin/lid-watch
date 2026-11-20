@@ -1,0 +1,22 @@
+#!/bin/sh
+# Turn the laptop panel off while the lid is closed and external monitors are
+# connected (logind ignores the lid when docked; GNOME would disable eDP-1).
+# On lid open, eDP-1 is re-enabled and kanshi re-applies its profile.
+LID=$(ls /proc/acpi/button/lid/*/state 2>/dev/null | head -1)
+[ -n "$LID" ] || exit 0
+PANEL=eDP-1
+prev=open
+
+externals() { wlr-randr | grep -c '^[A-Za-z]' | awk '{exit !($1 > 1)}'; }
+
+while sleep 2; do
+	case "$(cat "$LID")" in *closed*) state=closed ;; *) state=open ;; esac
+	[ "$state" = "$prev" ] && continue
+	prev=$state
+	if [ "$state" = closed ]; then
+		externals && wlr-randr --output "$PANEL" --off
+	else
+		wlr-randr --output "$PANEL" --on
+		pkill -HUP -x kanshi
+	fi
+done

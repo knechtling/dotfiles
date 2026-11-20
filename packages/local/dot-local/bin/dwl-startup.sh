@@ -50,8 +50,28 @@ fi
 # Notification daemon
 pgrep -x mako >/dev/null 2>&1 || mako &
 
-# Wallpaper setter
-setbg ~/.local/share/wallpapers
+# Wallpaper: keep the last one (wallpaper-menu/setbg), else GNOME's, else random
+if [ -e "${XDG_DATA_HOME:-$HOME/.local/share}/bg" ]; then
+  setbg
+elif [ -f "$HOME/.config/background" ]; then
+  setbg "$HOME/.config/background"
+else
+  setbg ~/.local/share/wallpapers
+fi
+
+# Monitor profiles per dock/desk (converted from GNOME: gnome2kanshi)
+pgrep -x kanshi >/dev/null 2>&1 || kanshi &
+
+# Laptop: panel off with lid closed while docked, low battery warnings
+if [ "$HOSTTYPE" = laptop ]; then
+  pgrep -f 'lid-watch' >/dev/null 2>&1 || lid-watch &
+  pgrep -f 'battery-notify' >/dev/null 2>&1 || battery-notify &
+fi
+
+# Automount USB drives like GNOME/Nautilus (tray icon for unmount)
+if command -v udiskie >/dev/null 2>&1; then
+  pgrep -x udiskie >/dev/null 2>&1 || udiskie --tray --notify &
+fi
 
 # Clipboard manager
 pgrep -f 'wl-paste --watch cliphist store' >/dev/null 2>&1 || wl-paste --watch cliphist store &

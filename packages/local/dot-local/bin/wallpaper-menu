@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Pick a wallpaper with thumbnails (rofi), set it via setbg.
+DIRS=(
+	"$HOME/.local/share/wallpapers"
+	"$HOME/Pictures/Wallpapers"
+	/usr/share/backgrounds
+	/usr/share/wallpapers
+)
+mapfile -t files < <(
+	[ -f "$HOME/.config/background" ] && echo "$HOME/.config/background" # GNOME's
+	[ -f "$HOME/Pictures/bg.jpg" ] && echo "$HOME/Pictures/bg.jpg"
+	for d in "${DIRS[@]}"; do
+		[ -d "$d" ] && find -L "$d" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \)
+	done | sort -u
+)
+[ ${#files[@]} -gt 0 ] || { notify-send "wallpaper-menu" "No wallpapers found"; exit 1; }
+
+i=$({
+	printf 'Zufällig\0icon\x1fmedia-playlist-shuffle\n'
+	printf 'Datei wählen …\0icon\x1ffolder-pictures\n'
+	for f in "${files[@]}"; do printf '%s\0icon\x1f%s\n' "${f/#$HOME/\~}" "$f"; done
+} | rofi -dmenu -i -no-custom -show-icons -format i -p Hintergrund \
+	-theme-str 'element-icon { size: 6em; } listview { lines: 6; }') || exit
+[ -n "$i" ] || exit
+case "$i" in
+0) setbg "${files[RANDOM % ${#files[@]}]}" ;;
+1)
+	f=$(zenity --file-selection --file-filter='Bilder | *.jpg *.jpeg *.png *.webp' 2>/dev/null) &&
+		setbg "$f"
+	;;
+*) setbg "${files[i - 2]}" ;;
+esac

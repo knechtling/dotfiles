@@ -1,0 +1,200 @@
+#!/usr/bin/env bash
+# NetworkManager menu for tiling WMs (replaces the GNOME network/VPN panel).
+#
+#   nm-menu          main menu: active connections, VPN, Wi-Fi, Ethernet, edit
+#   nm-menu vpn      toggle VPN / WireGuard connections
+#   nm-menu wifi     scan and connect to Wi-Fi
+#   nm-menu eth      activate an Ethernet/VLAN profile on a chosen device
+#
+# Connections are addressed by UUID, so duplicate profile names are fine.
+# VPN passwords/OTP prompts come from the running secret agent (nm-applet);
+# if activation fails anyway, it is retried in a terminal with "nmcli --ask".
+
+TERMINAL="${TERMINAL:-foot}"
+
+# rofi with -format i prints the index of the selected line (empty on Esc)
+pick() {
+	local prompt="$1"
+	rofi -dmenu -i -no-custom -format i -p "$prompt"
+}
+
+ask() {
+	rofi -dmenu -p "$1" ${2:+-password} -l 0 </dev/null
+}
+
+note() { notify-send -a nm-menu "$@" 2>/dev/null; }
+
+# nmcli -t escapes ':' and '\' in values; the name is always the last field
+unescape() {
+	local s="${1//\\:/:}"
+	printf '%s' "${s//\\\\/\\}"
+}
+
+con_up() { # uuid [ifname]
+	local uuid="$1" dev="$2" name out
+	name=$(nmcli -g connection.id connection show uuid "$uuid")
+	note "Connecting" "$name${dev:+ on $dev}"
+	if out=$(nmcli connection up uuid "$uuid" ${dev:+ifname "$dev"} 2>&1); then
+		note "Connected" "$name"
+	elif grep -qiE 'secrets were required|no secrets|no agents' <<<"$out"; then
+		"$TERMINAL" -T floating -e sh -c \
+			"nmcli --ask connection up uuid '$uuid' ${dev:+ifname '$dev'}; printf '\nEnter to close'; read _"
+	else
+		note -u critical "Failed: $name" "$out"
+	fi
+}
+
+con_down() {
+	local uuid="$1" name out
+	name=$(nmcli -g connection.id connection show uuid "$uuid")
+	if out=$(nmcli connection down uuid "$uuid" 2>&1); then
+		note "Disconnected" "$name"
+	else
+		note -u critical "Failed: $name" "$out"
+	fi
+}
+
+toggle() { # uuid active
+	if [ "$2" = yes ]; then con_down "$1"; else con_up "$1"; fi
+}
+
+# fills arrays UUIDS/LINES with connections of the given types (regex)
+list_cons() {
+	local types="$1" uuid type dev active name mark
+	UUIDS=() ACTS=() LINES=()
+	while IFS=: read -r uuid type dev active name; do
+		[[ "$type" =~ ^($types)$ ]] || continue
+		name=$(unescape "$name")
+		if [ "$active" = yes ]; then mark="●"; else mark="○"; fi
+		UUIDS+=("$uuid") ACTS+=("$active")
+		LINES+=("$(printf '%s %-34s %-10s %s' "$mark" "$name" "${type#802-3-}" "$dev")")
+	done < <(nmcli -t -f UUID,TYPE,DEVICE,ACTIVE,NAME connection show |
+		sort -t: -k4,4r -k5,5) # active first, then by name
+}
+
+menu_vpn() {
+	list_cons 'vpn|wireguard'
+	[ ${#UUIDS[@]} -gt 0 ] || { note "No VPN connections configured"; return; }
+	local i
+	i=$(printf '%s\n' "${LINES[@]}" | pick "VPN") || return
+	[ -n "$i" ] && toggle "${UUIDS[$i]}" "${ACTS[$i]}"
+}
+
+pick_eth_dev() { # prints device name; empty if aborted
+	local devs=() lines=() d t s i
+	while IFS=: read -r d t s; do
+		[ "$t" = ethernet ] || continue
+		devs+=("$d")
+		lines+=("$(printf '%-16s %s' "$d" "$s")")
+	done < <(nmcli -t -f DEVICE,TYPE,STATE device)
+	case ${#devs[@]} in
+	0) note "No Ethernet device found" ;;
+	1) printf '%s' "${devs[0]}" ;;
+	*)
+		i=$(printf '%s\n' "${lines[@]}" | pick "Device") || return
+		[ -n "$i" ] && printf '%s' "${devs[$i]}"
+		;;
+	esac
+}
+
+menu_eth() {
+	list_cons '802-3-ethernet|vlan|bond'
+	local i uuid ctype bound dev
+	i=$(printf '%s\n' "${LINES[@]}" | pick "Ethernet") || return
+	[ -n "$i" ] || return
+	uuid="${UUIDS[$i]}"
+	if [ "${ACTS[$i]}" = yes ]; then con_down "$uuid"; return; fi
+	# profiles bound to an interface (and VLANs/bridges) pick their own device
+	ctype=$(nmcli -g connection.type connection show uuid "$uuid")
+	bound=$(nmcli -g connection.interface-name connection show uuid "$uuid")
+	if [ -n "$bound" ] || [ "$ctype" != 802-3-ethernet ]; then
+		con_up "$uuid"
+	else
+		dev=$(pick_eth_dev)
+		[ -n "$dev" ] && con_up "$uuid" "$dev"
+	fi
+}
+
+menu_wifi() {
+	if [ "$(nmcli radio wifi)" != enabled ]; then
+		nmcli radio wifi on && note "Wi-Fi enabled" && sleep 3
+	fi
+	note "Scanning Wi-Fi…"
+	local ssids=() secs=() lines=() inuse sig sec ssid i
+	while IFS=: read -r inuse sig sec ssid; do
+		ssid=$(unescape "$ssid")
+		[ -n "$ssid" ] || continue
+		ssids+=("$ssid") secs+=("$sec")
+		lines+=("$(printf '%s %3s%%  %-32s %s' "${inuse:- }" "$sig" "$ssid" "${sec:-open}")")
+	done < <(nmcli -t -f IN-USE,SIGNAL,SECURITY,SSID device wifi list --rescan yes |
+		sort -t: -k2,2nr | awk -F: '!seen[$4]++')
+	i=$(printf '%s\n' "${lines[@]}" | pick "Wi-Fi") || return
+	[ -n "$i" ] || return
+	ssid="${ssids[$i]}" sec="${secs[$i]}"
+
+	# existing profile for this SSID?
+	local uuid
+	uuid=$(nmcli -t -f UUID,TYPE connection show | while IFS=: read -r u t; do
+		[ "$t" = 802-11-wireless ] || continue
+		[ "$(nmcli -g 802-11-wireless.ssid connection show uuid "$u")" = "$ssid" ] && { echo "$u"; break; }
+	done)
+	if [ -n "$uuid" ]; then
+		con_up "$uuid"
+	elif [[ "$sec" == *802.1X* ]]; then
+		note "Enterprise Wi-Fi" "Create the profile for '$ssid' in the connection editor"
+		nm-connection-editor --create --type=802-11-wireless &
+	elif [ -z "$sec" ] || [ "$sec" = "--" ]; then
+		nmcli device wifi connect "$ssid" >/dev/null 2>&1 && note "Connected" "$ssid" ||
+			note -u critical "Failed" "$ssid"
+	else
+		local pw out
+		pw=$(ask "Password for $ssid" pw) || return
+		if out=$(nmcli device wifi connect "$ssid" password "$pw" 2>&1); then
+			note "Connected" "$ssid"
+		else
+			note -u critical "Failed: $ssid" "$out"
+		fi
+	fi
+}
+
+menu_main() {
+	local entries=() actions=() uuid type dev name i
+	# active connections first; selecting one disconnects it
+	while IFS=: read -r uuid type dev name; do
+		[[ "$type" =~ ^(loopback|bridge)$ ]] && [[ "$dev" =~ ^(lo|docker|virbr|br-) ]] && continue
+		entries+=("$(printf '● %-34s %-10s %s  (disconnect)' "$(unescape "$name")" "${type#802-3-}" "$dev")")
+		actions+=("down $uuid")
+	done < <(nmcli -t -f UUID,TYPE,DEVICE,NAME connection show --active)
+
+	entries+=("  VPN / WireGuard …" "  Wi-Fi …" "  Ethernet / VLAN profiles …")
+	actions+=(vpn wifi eth)
+	if [ "$(nmcli radio wifi)" = enabled ]; then
+		entries+=("  Wi-Fi off"); actions+=("radio off")
+	else
+		entries+=("  Wi-Fi on"); actions+=("radio on")
+	fi
+	entries+=("  Edit connections …" "  New connection …" "  nmtui" "  Device status")
+	actions+=(edit new nmtui status)
+
+	i=$(printf '%s\n' "${entries[@]}" | pick "Network") || return
+	[ -n "$i" ] || return
+	case "${actions[$i]}" in
+	down\ *) con_down "${actions[$i]#down }" ;;
+	vpn) menu_vpn ;;
+	wifi) menu_wifi ;;
+	eth) menu_eth ;;
+	radio\ *) nmcli radio wifi "${actions[$i]#radio }" ;;
+	edit) nm-connection-editor & ;;
+	new) nm-connection-editor --create & ;;
+	nmtui) "$TERMINAL" -T floating -e nmtui & ;;
+	status) "$TERMINAL" -T floating -e sh -c 'nmcli device; echo; nmcli connection show --active; echo; ip -br a; printf "\nEnter to close"; read _' & ;;
+	esac
+}
+
+case "$1" in
+vpn) menu_vpn ;;
+wifi) menu_wifi ;;
+eth) menu_eth ;;
+"") menu_main ;;
+*) echo "usage: ${0##*/} [vpn|wifi|eth]" >&2; exit 2 ;;
+esac

@@ -30,4 +30,8 @@ trueloc="$(readlink -f "$1")" &&
 # 	[ -f "$zathuraconf.bak" ] && unlink "$zathuraconf" && mv "$zathuraconf.bak" "$zathuraconf"
 # fi
 
-swaybg --mode fill --image "$bgloc" &>/dev/null & 
+# Start the new swaybg first, then stop the old ones (no flicker, no pile-up)
+old=$(pgrep -x swaybg)
+swaybg --mode fill --image "$bgloc" >/dev/null 2>&1 &
+[ -n "$old" ] && sleep 0.5 && kill $old 2>/dev/null
+

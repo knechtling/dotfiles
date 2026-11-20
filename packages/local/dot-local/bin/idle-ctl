@@ -1,0 +1,28 @@
+#!/bin/sh
+# Idle actions for swayidle (GNOME-like: dim, screen off, suspend on battery).
+#   idle-ctl dim|undim|off|on|suspend
+BAT_DIM=30 # percent
+
+on_battery() {
+	for ac in /sys/class/power_supply/A[CD]*/online; do
+		[ -r "$ac" ] && [ "$(cat "$ac")" = 1 ] && return 1
+	done
+	return 0
+}
+
+case "$1" in
+dim)
+	ls /sys/class/backlight/* >/dev/null 2>&1 || exit 0
+	cur=$(brightnessctl -m | cut -d, -f4 | tr -d %)
+	[ "${cur:-0}" -gt "$BAT_DIM" ] && brightnessctl -q -s set "$BAT_DIM%"
+	;;
+undim) brightnessctl -q -r 2>/dev/null ;;
+off) command -v wlopm >/dev/null && wlopm --off '*' ;;
+on) command -v wlopm >/dev/null && wlopm --on '*' ;;
+suspend)
+	# GNOME default: suspend when idle on battery, never on AC
+	on_battery && systemctl suspend
+	;;
+*) echo "usage: ${0##*/} dim|undim|off|on|suspend" >&2; exit 2 ;;
+esac
+exit 0

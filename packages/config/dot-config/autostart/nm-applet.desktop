@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Network
+Comment=NetworkManager tray icon and secret agent (VPN password/OTP prompts)
+Icon=nm-device-wireless
+Exec=nm-applet --indicator
+Terminal=false
+Type=Application
+NoDisplay=true
+NotShowIn=KDE;GNOME;
+X-GNOME-UsesNotifications=true
