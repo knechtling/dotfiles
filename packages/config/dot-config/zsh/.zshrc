@@ -44,6 +44,7 @@ if [[ -s "$ZINIT_HOME/zinit.zsh" ]]; then
 fi
 
 # Basic auto/tab complete:
+fpath=(~/.config/zsh/ $fpath)	# local completions (_timew, _yazi, ...)
 autoload -U compinit
 zstyle ':completion:*' menu select
 zmodload zsh/complist
@@ -175,8 +176,6 @@ setopt AUTO_PUSHD PUSHD_SILENT PUSHD_TO_HOME
 setopt PUSHD_IGNORE_DUPS
 setopt PUSHD_MINUS
 
-# Add cheat.sh completion
-fpath=(~/.config/zsh/ $fpath)
 
 ## Load plugins; should be last.
 
