@@ -1,17 +1,23 @@
 #!/bin/sh
 # Battery segment for slstatus, including the trailing separator, so hosts
 # without a battery (desktop) print nothing and the bar has no empty field.
-# Charging: ⚡, discharging: remaining time (h:mm), low (<=15%): ❗.
+# Nerd Font icon by charge level (10% steps), charging icon, alert at <=15%;
+# discharging also shows the remaining time (h:mm).
 for b in /sys/class/power_supply/BAT*; do
 	[ -r "$b/capacity" ] || continue
 	cap=$(cat "$b/capacity")
 	st=$(cat "$b/status")
-	icon=🔋
+	# 󰁺 󰁻 󰁼 󰁽 󰁾 󰁿 󰂀 󰂁 󰂂 󰁹  = 10 % … 100 %
+	set -- 󰁺 󰁻 󰁼 󰁽 󰁾 󰁿 󰂀 󰂁 󰂂 󰁹
+	i=$(((cap + 5) / 10))
+	[ "$i" -lt 1 ] && i=1
+	[ "$i" -gt 10 ] && i=10
+	eval "icon=\${$i}"
 	extra=
 	case "$st" in
-	Charging) icon=⚡ ;;
+	Charging) icon=󰂄 ;;
 	Discharging)
-		[ "$cap" -le 15 ] && icon=❗
+		[ "$cap" -le 15 ] && icon=󰂃
 		# remaining time from charge/current (µAh/µA) or energy/power (µWh/µW)
 		now=$(cat "$b/charge_now" 2>/dev/null || cat "$b/energy_now" 2>/dev/null)
 		rate=$(cat "$b/current_now" 2>/dev/null || cat "$b/power_now" 2>/dev/null)

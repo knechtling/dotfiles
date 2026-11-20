@@ -1,0 +1,13 @@
+#!/bin/sh
+# Volume for slstatus: Nerd Font icon by level, crossed-out speaker when muted.
+vol=$(pactl get-sink-volume @DEFAULT_SINK@ 2>/dev/null | awk 'NR==1{sub("%","",$5); print $5}')
+[ -n "$vol" ] || exit 0
+if pactl get-sink-mute @DEFAULT_SINK@ 2>/dev/null | grep -q yes; then
+	printf '󰖁 %s%%\n' "$vol"
+elif [ "$vol" -ge 60 ]; then
+	printf '󰕾 %s%%\n' "$vol"
+elif [ "$vol" -ge 25 ]; then
+	printf '󰖀 %s%%\n' "$vol"
+else
+	printf '󰕿 %s%%\n' "$vol"
+fi

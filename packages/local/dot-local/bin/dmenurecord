@@ -117,22 +117,22 @@ start_wf() {
   }
 
   if [ "$audio" = "with" ]; then
-    build_and_start yes "⏺️🎙️"
+    build_and_start yes "󰑊 󰍬"
     return
   fi
 
   if [ "$audio" = "without" ]; then
-    build_and_start no "⏺️"
+    build_and_start no "󰑊"
     return
   fi
 
   # auto: try with audio, then fallback to video-only
-  build_and_start yes "⏺️🎙️" && return
+  build_and_start yes "󰑊 󰍬" && return
 
   [ $fallback_notice_shown -eq 0 ] && notify "Falling back to video-only (audio backend unavailable?)"
   fallback_notice_shown=1
 
-  build_and_start no "⏺️"
+  build_and_start no "󰑊"
 }
 
 start_audio_only() {
@@ -142,7 +142,7 @@ start_audio_only() {
     return
   }
   file="$RECORD_DIR/audio-$(timestamp).flac"
-  start_recorder "🎙️" "$file" ffmpeg -f pulse -i default -c:a flac "$file" || notify "Audio recording failed"
+  start_recorder "󰍬" "$file" ffmpeg -f pulse -i default -c:a flac "$file" || notify "Audio recording failed"
 }
 
 start_webcam() {
@@ -154,7 +154,7 @@ start_webcam() {
     return
   }
   file="$RECORD_DIR/${label}-$(timestamp).mkv"
-  start_recorder "🎥" "$file" ffmpeg -f v4l2 -video_size "$size" -i /dev/video0 "$file" || notify "Webcam recording failed"
+  start_recorder "󰖠" "$file" ffmpeg -f v4l2 -video_size "$size" -i /dev/video0 "$file" || notify "Webcam recording failed"
 }
 
 stop_recording() {
