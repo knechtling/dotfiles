@@ -2,6 +2,7 @@
 configuration {
     font:           "JetBrainsMono Nerd Font 11";
     show-icons:     true;
+    icon-theme:     "Papirus-Dark";
     hover-select:   true;
     me-select-entry: "";
     me-accept-entry: "MousePrimary";

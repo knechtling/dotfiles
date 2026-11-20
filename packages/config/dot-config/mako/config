@@ -9,6 +9,7 @@ border-radius=6
 padding=10
 width=360
 max-icon-size=48
+icon-path=/usr/share/icons/Papirus-Dark:/usr/share/icons/Papirus
 default-timeout=5000
 [app-name=screenshot]
 on-button-right=exec imv ~/Pictures/Screenshots/last.png
