@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=PolicyKit Authentication Agent
 Comment=Password prompts for privileged actions (GNOME Shell has its own)
-Exec=sh -c 'for a in /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1; do [ -x "$a" ] && exec "$a"; done'
+Exec=sh -c ~/.local/bin/polkit-agent
 Terminal=false
 Type=Application
 NoDisplay=true

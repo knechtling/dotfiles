@@ -1,0 +1,12 @@
+#!/bin/sh
+# Start the GNOME polkit agent from wherever the distro installed it
+# (Arch: /usr/lib/polkit-gnome, Debian: /usr/lib/policykit-1-gnome).
+# A script because the systemd autostart generator mangles shell loops
+# in a .desktop Exec= line ("$a" arrives as a literal \$a).
+for a in /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 \
+	/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1 \
+	/usr/libexec/polkit-gnome-authentication-agent-1; do
+	[ -x "$a" ] && exec "$a"
+done
+echo "polkit-agent: no polkit-gnome agent installed" >&2
+exit 1
