@@ -1,5 +1,4 @@
 #!/bin/sh
-set -x
 
 # Minimal wf-recorder wrapper for dmenu keybinds.
 [ -e /proc/self/fd/0 ] || exec </dev/null
@@ -82,6 +81,13 @@ start_wf() {
 
   case "$mode" in
   screencast | screencast-noaudio)
+    # wf-recorder asks on stdin which output to record when there are
+    # several; we have no terminal, so pick one by clicking it instead.
+    output=
+    if [ "$(wlr-randr | grep -c '^[A-Za-z]')" -gt 1 ]; then
+      require slurp || return
+      output=$(slurp -o -f %o) || return
+    fi
     ;;
   region | region-noaudio)
     require slurp || return
@@ -100,6 +106,9 @@ start_wf() {
     case "$mode" in
     region | region-noaudio)
       set -- "$@" -g "$geom"
+      ;;
+    *)
+      [ -n "$output" ] && set -- "$@" -o "$output"
       ;;
     esac
     [ "$want_audio" = "yes" ] && set -- "$@" -a
