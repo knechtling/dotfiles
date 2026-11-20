@@ -57,12 +57,16 @@ run_menu() {
 }
 
 # --- mode picker -----------------------------------------------------------
-choice="$(printf 'Fullscreen\nRegion' | run_menu 'Screenshot')" || exit 1
-case "$choice" in
-Fullscreen) select_area=0 ;;
-Region) select_area=1 ;;
-*) exit 1 ;;
-esac
+# Only ask when the caller did not decide: -s (e.g. the keyboard's
+# Screen Capture key) goes straight to region selection.
+if [ "$select_area" -eq 0 ]; then
+  choice="$(printf 'Fullscreen\nRegion' | run_menu 'Screenshot')" || exit 1
+  case "$choice" in
+  Fullscreen) select_area=0 ;;
+  Region) select_area=1 ;;
+  *) exit 1 ;;
+  esac
+fi
 
 # --- setup -----------------------------------------------------------------
 shot_dir="${SCREENSHOT_DIR:-"$HOME/Pictures/Screenshots"}"
