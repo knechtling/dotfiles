@@ -70,6 +70,7 @@ tooltip label { color: @text; padding: 4px 8px; }
 #systemd-failed-units,
 #pulseaudio,
 #network,
+#battery,
 #custom-system-icon,
 #cpu,
 #memory,
@@ -91,6 +92,7 @@ tooltip label { color: @text; padding: 4px 8px; }
 #custom-appmenu:hover,
 #pulseaudio:hover,
 #network:hover,
+#battery:hover,
 #clock:hover,
 #custom-swaync:hover,
 #custom-system-icon:hover,
@@ -181,6 +183,12 @@ window#waybar.empty #window {
 #network                          { color: @teal; }
 #network.disconnected,
 #network.linked                   { color: @red; border-color: @red; }
+
+#battery                          { color: @green; }
+#battery.charging,
+#battery.plugged                  { color: @teal; }
+#battery.warning:not(.charging)   { color: @peach; border-color: @peach; }
+#battery.critical:not(.charging)  { color: @red; border-color: @red; }
 
 /* System drawer */
 #custom-system-icon               { color: @blue; font-size: 16px; }

@@ -25,6 +25,7 @@
     "systemd-failed-units",
     "pulseaudio",
     "network",
+    "battery",
     "group/system",
     "sway/language",
     "tray",
@@ -167,6 +168,16 @@
     "on-click": "foot -- nmtui",
     "on-click-right": "nm-connection-editor"
   },
+  "battery": {
+    "bat": "BAT0",
+    "interval": 30,
+    "states": { "warning": 30, "critical": 15 },
+    "format": "{icon}  {capacity}%",
+    "format-charging": "󰂄  {capacity}%",
+    "format-plugged": "󰚥  {capacity}%",
+    "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+    "tooltip-format": "{timeTo}\n{power:.1f} W  ·  health {health}%"
+  },
   // System drawer — click 󰍛 to expand CPU / RAM / temp inline
   "group/system": {
     "orientation": "inherit",
@@ -243,13 +254,6 @@
     "tooltip": true
   }
   // ── Optional ───────────────────────────────────────────────────────────────
-  // "battery": {
-  //   "states": { "good": 95, "warning": 30, "critical": 15 },
-  //   "format": "{icon}  {capacity}%",
-  //   "format-charging": "  {capacity}%",
-  //   "format-icons": ["", "", "", "", ""],
-  //   "tooltip-format": "{timeTo}  ({power}W)"
-  // },
   // "backlight": {
   //   "format": "{icon}  {percent}%",
   //   "format-icons": ["", "", "", "", "", "", "", "", ""],
