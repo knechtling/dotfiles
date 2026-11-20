@@ -3,7 +3,12 @@
 # System action helper using wmenu for Wayland sessions.
 set -eu
 
-export WM="dwl"
+if [ -n "${SWAYSOCK:-}" ]; then
+  WM="sway"
+else
+  WM="dwl"
+fi
+export WM
 STOPFILE="${XDG_CACHE_HOME:-$HOME/.cache}/dwl-stop"
 
 case "$(readlink -f /sbin/init)" in
@@ -31,6 +36,20 @@ need_cmd() {
 
 need_cmd notify-send pstree wmenu "$ctl"
 
+lock() {
+  if command -v waylock >/dev/null 2>&1; then
+    waylock
+  else
+    need_cmd swaylock
+    swaylock -f -c 000000
+  fi
+}
+
+can() {
+  [ "$(busctl call org.freedesktop.login1 /org/freedesktop/login1 \
+    org.freedesktop.login1.Manager "Can$1" 2>/dev/null)" = 's "yes"' ]
+}
+
 wmpid() {
   tree="$(pstree -ps $$)"
   tree="${tree#*$WM\(}"
@@ -39,8 +58,10 @@ wmpid() {
 
 menu_items="🔒 lock
 🚪 leave $WM
-♻️ renew $WM
-🐻 hibernate
+♻️ renew $WM"
+can Hibernate && menu_items="$menu_items
+🐻 hibernate"
+menu_items="$menu_items
 🔃 reboot
 🖥️ shutdown
 💤 sleep"
@@ -49,17 +70,23 @@ choice="$(printf '%s\n' "$menu_items" | wmenu -i -p 'Action: ')"
 
 case "$choice" in
 '🔒 lock')
-  need_cmd waylock
-  waylock
+  lock
   ;;
 "🚪 leave $WM")
-  need_cmd waylock
+  if [ "$WM" = sway ]; then
+    swaymsg exit
+    exit
+  fi
   pid="$(wmpid)"
   mkdir -p "$(dirname "$STOPFILE")"
   : >"$STOPFILE"
   kill -TERM "$pid"
   ;;
 "♻️ renew $WM")
+  if [ "$WM" = sway ]; then
+    swaymsg reload
+    exit
+  fi
   pid="$(wmpid)"
   if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
     kill -USR1 "$pid"
@@ -69,13 +96,11 @@ case "$choice" in
   ;;
 '🐻 hibernate')
   $ctl hibernate
-  need_cmd waylock
-  waylock
+  lock
   ;;
 '💤 sleep')
   $ctl suspend -i
-  need_cmd waylock
-  waylock
+  lock
   ;;
 '🔃 reboot') $ctl reboot ;;
 '🖥️ shutdown') $ctl poweroff ;;
