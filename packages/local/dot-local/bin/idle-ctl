@@ -2,6 +2,7 @@
 # Idle actions for swayidle (GNOME-like: dim, screen off, suspend on battery).
 #   idle-ctl dim|undim|off|on|suspend
 BAT_DIM=30 # percent
+MARK="${XDG_RUNTIME_DIR:-/tmp}/idle-ctl.dimmed"
 
 on_battery() {
 	for ac in /sys/class/power_supply/A[CD]*/online; do
@@ -14,9 +15,17 @@ case "$1" in
 dim)
 	ls /sys/class/backlight/* >/dev/null 2>&1 || exit 0
 	cur=$(brightnessctl -m | cut -d, -f4 | tr -d %)
-	[ "${cur:-0}" -gt "$BAT_DIM" ] && brightnessctl -q -s set "$BAT_DIM%"
+	# Remember that *we* dimmed: undim must not restore a stale saved value
+	# when the user already sat below BAT_DIM and nothing was dimmed.
+	if [ "${cur:-0}" -gt "$BAT_DIM" ]; then
+		brightnessctl -q -s set "$BAT_DIM%" && : >"$MARK"
+	fi
 	;;
-undim) brightnessctl -q -r 2>/dev/null ;;
+undim)
+	[ -e "$MARK" ] || exit 0
+	rm -f "$MARK"
+	brightnessctl -q -r 2>/dev/null
+	;;
 off) command -v wlopm >/dev/null && wlopm --off '*' ;;
 on) command -v wlopm >/dev/null && wlopm --on '*' ;;
 suspend)
