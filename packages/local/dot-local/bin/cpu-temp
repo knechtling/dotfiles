@@ -1,0 +1,13 @@
+#!/bin/sh
+# CPU temperature in °C for slstatus; finds the sensor by driver name since
+# hwmon numbering differs between machines and boots.
+for h in /sys/class/hwmon/hwmon*; do
+	case "$(cat "$h/name" 2>/dev/null)" in
+	k10temp | zenpower | coretemp | cpu_thermal)
+		echo $(($(cat "$h/temp1_input") / 1000))
+		exit 0
+		;;
+	esac
+done
+[ -r /sys/class/thermal/thermal_zone0/temp ] &&
+	echo $(($(cat /sys/class/thermal/thermal_zone0/temp) / 1000))
