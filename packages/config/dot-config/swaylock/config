@@ -1,6 +1,23 @@
 # Shared by swayidle (idle/lid/before-sleep) and sysact; keep the look here.
-color=000000
+color=1a1b26
+inside-color=1a1b26
+ring-color=283457
+key-hl-color=7aa2f7
+bs-hl-color=f7768e
+line-color=00000000
+separator-color=00000000
+text-color=c0caf5
+inside-ver-color=283457
+ring-ver-color=7aa2f7
+text-ver-color=c0caf5
+inside-wrong-color=1a1b26
+ring-wrong-color=f7768e
+text-wrong-color=f7768e
+inside-clear-color=1a1b26
+ring-clear-color=e0af68
+text-clear-color=e0af68
+text-caps-lock-color=e0af68
 ignore-empty-password
 show-failed-attempts
 indicator-caps-lock
-font=monospace
+font=JetBrainsMono Nerd Font

@@ -1,4 +1,24 @@
+# Tokyo Night, like dwl/kitty/tmux/nvim
+font=JetBrainsMono Nerd Font 11
+background-color=#1a1b26
+text-color=#c0caf5
+border-color=#7aa2f7
+progress-color=over #283457
+border-size=2
+border-radius=6
+padding=10
+width=360
+max-icon-size=48
 default-timeout=5000
 [app-name=screenshot]
 on-button-right=exec imv ~/Pictures/Screenshots/last.png
-on-button-left=exec sh -c 'realpath ~/Pictures/Screenshots/last.png | tee >(wl-copy) >/dev/null
+# left click: copy the screenshot's file path (the image itself is already copied)
+on-button-left=exec sh -c 'realpath ~/Pictures/Screenshots/last.png | wl-copy -n; makoctl dismiss'
+
+[urgency=low]
+border-color=#292e42
+text-color=#a9b1d6
+
+[urgency=critical]
+border-color=#f7768e
+default-timeout=0

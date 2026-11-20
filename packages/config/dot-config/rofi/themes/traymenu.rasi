@@ -1,6 +1,6 @@
 /* Tray right-click menu for dwl (colors match the dwl bar) */
 configuration {
-    font:           "monospace 10";
+    font:           "JetBrainsMono Nerd Font 11";
     show-icons:     true;
     hover-select:   true;
     me-select-entry: "";
@@ -8,11 +8,11 @@ configuration {
 }
 
 * {
-    bg:      #222222;
-    fg:      #bbbbbb;
-    sel-bg:  #005577;
-    sel-fg:  #eeeeee;
-    border:  #444444;
+    bg:      #1a1b26;
+    fg:      #a9b1d6;
+    sel-bg:  #283457;
+    sel-fg:  #c0caf5;
+    border:  #7aa2f7;
 
     background-color: transparent;
     text-color:       @fg;

@@ -1,0 +1,12 @@
+#!/bin/sh
+# Theme wrapper: every script and dwl binding calls plain "wmenu"; this puts
+# the shared look (Tokyo Night, like dwl/kitty/tmux/nvim) in one place.
+# Later arguments win, so callers can still override single options.
+self=$(readlink -f "$0")
+for d in $(printf %s "$PATH" | tr : ' '); do
+	[ -x "$d/wmenu" ] && [ "$(readlink -f "$d/wmenu")" != "$self" ] &&
+		exec "$d/wmenu" -f "JetBrainsMono Nerd Font 11" \
+			-N 1a1b26 -n a9b1d6 -M 283457 -m c0caf5 -S 7aa2f7 -s 1a1b26 "$@"
+done
+echo "wmenu: real wmenu not found in PATH" >&2
+exit 127
