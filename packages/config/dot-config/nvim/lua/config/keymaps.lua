@@ -8,3 +8,13 @@ vim.keymap.set("n", "<leader>fx", ":!chmod +x %<CR>", {
 })
 
 vim.cmd([[cnoreabbrev w!! w !sudo tee % >/dev/null <Bar> edit!]])
+
+-- ── QWERTZ ergonomics ──────────────────────────────────────────────
+-- ö ä Ö Ä sit on the home row where QWERTY has ; ' — use them as the
+-- bracket keys, so [d ]d [b ]b ci[ ya{ … need no AltGr gymnastics.
+for lhs, rhs in pairs({ ["ö"] = "[", ["ä"] = "]", ["Ö"] = "{", ["Ä"] = "}" }) do
+  vim.keymap.set({ "n", "x", "o" }, lhs, rhs, { remap = true, desc = "QWERTZ " .. rhs })
+end
+
+-- Pipe without AltGr (markdown tables, shell pipelines).
+vim.keymap.set({ "i", "c" }, "<M-p>", "|", { desc = "Insert |" })
