@@ -4,8 +4,11 @@
 if command -v detect-hosttype >/dev/null 2>&1; then
   HOSTTYPE=$(detect-hosttype)
   export HOSTTYPE
-  [ -f "$HOME/.config/environment.d/10-${HOSTTYPE}.conf" ] &&
-    . "$HOME/.config/environment.d/10-${HOSTTYPE}.conf"
+  if [ -f "$HOME/.config/hosttype/${HOSTTYPE}.conf" ]; then
+    set -a
+    . "$HOME/.config/hosttype/${HOSTTYPE}.conf"
+    set +a
+  fi
 fi
 
 # Export Wayland and D-Bus environment to systemd user services

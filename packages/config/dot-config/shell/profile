@@ -19,8 +19,11 @@ unsetopt PROMPT_SP
 if command -v detect-hosttype >/dev/null 2>&1; then
     HOSTTYPE=$(detect-hosttype)
     export HOSTTYPE
-    [ -f "$XDG_CONFIG_HOME/environment.d/10-${HOSTTYPE}.conf" ] && \
-        . "$XDG_CONFIG_HOME/environment.d/10-${HOSTTYPE}.conf"
+    if [ -f "$XDG_CONFIG_HOME/hosttype/${HOSTTYPE}.conf" ]; then
+        set -a
+        . "$XDG_CONFIG_HOME/hosttype/${HOSTTYPE}.conf"
+        set +a
+    fi
 fi
 
 # Default programs:
